@@ -12,11 +12,14 @@ isEmpty(CASROOT) {
 SOURCES += \
     main.cpp \
     MainWindow.cpp \
-    OccView.cpp
+    OccView.cpp \
+    MakeBottle.cpp \
+    Document.cpp
 
 HEADERS += \
     MainWindow.h \
-    OccView.h
+    OccView.h \
+    Document.h
 
 QMAKE_CXXFLAGS += -isystem $$CASROOT/inc
 
@@ -30,3 +33,6 @@ LIBS += -lTKernel -lPTKernel -lTKMath -lTKService -lTKV3d -lTKOpenGl \
         -lTKSTEPBase -lTKShapeSchema -lTKGeomBase -lTKGeomAlgo -lTKG3d -lTKG2d \
         -lTKXSBase -lTKPShape -lTKShHealing -lTKHLR -lTKTopAlgo -lTKMesh -lTKPrim \
         -lTKCDF -lTKBool -lTKBO -lTKFillet -lTKOffset
+
+RESOURCES += \
+    resources.qrc
