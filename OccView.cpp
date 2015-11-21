@@ -1,4 +1,9 @@
 #include "OccView.h"
+#include <QWheelEvent>
+#include <QDebug>
+#include <QCursor>
+#include <QApplication>
+
 #include <Graphic3d_GraphicDriver.hxx>
 
 #if defined(Q_OS_WIN32)
@@ -9,13 +14,19 @@
 #include <Xw_Window.hxx>
 #endif
 
+
+QCursor* OccView::s_rotate = NULL;
+QCursor* OccView::s_zoom = NULL;
+
 OccView::OccView(Handle(AIS_InteractiveContext) context):
     m_context(context)
 {   
     QSurfaceFormat format;
     format.setDepthBufferSize(16);
-    format.setStencilBufferSize(16);
+    format.setStencilBufferSize(1);
     setFormat(format);
+
+    initCursors();
 
     m_view = m_context->CurrentViewer()->CreateView();
 }
@@ -29,6 +40,19 @@ void OccView::fitAll()
   m_view->FitAll();
   m_view->ZFitAll();
   m_view->Redraw();
+}
+
+void OccView::wheelEvent(QWheelEvent* ev)
+{
+    int x = ev->x() + ev->delta() / 8;
+    int y = ev->y() + ev->delta() / 8;
+    m_view->Zoom(ev->x(), ev->y(), x, y);
+}
+
+void OccView::initCursors()
+{
+    if(!s_rotate) s_rotate = new QCursor(QPixmap(":/icons/Rotate.png"));
+    if(!s_zoom) s_zoom = new QCursor(QPixmap(":/icons/Zoom.png"));
 }
 
 void OccView::initializeGL()

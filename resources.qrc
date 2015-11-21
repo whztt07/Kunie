@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>icons/Bottle.png</file>
         <file>icons/FitAll.png</file>
+        <file>icons/Zoom.png</file>
+        <file>icons/Rotate.png</file>
     </qresource>
 </RCC>
