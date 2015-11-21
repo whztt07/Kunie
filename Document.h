@@ -5,14 +5,13 @@
 #include <V3d_Viewer.hxx>
 #include <AIS_InteractiveContext.hxx>
 
-class QWidget;
 class OccView;
 
 class Document : public QObject
 {
 public:
     explicit Document(QObject *parent=0);
-    QWidget* createView(QWidget* parent=0, Qt::WindowFlags flags=0);
+    OccView* view();
 
     void onMakeBottle();
 

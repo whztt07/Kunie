@@ -9,7 +9,7 @@
 #include <Xw_Window.hxx>
 #endif
 
-OccView::OccView(Handle_AIS_InteractiveContext context):
+OccView::OccView(Handle(AIS_InteractiveContext) context):
     m_context(context)
 {   
     QSurfaceFormat format;

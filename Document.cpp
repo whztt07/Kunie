@@ -1,5 +1,4 @@
 #include <QApplication>
-#include <QWidget>
 #include <Aspect_DisplayConnection.hxx>
 #include <OpenGl_GraphicDriver.hxx>
 
@@ -37,12 +36,13 @@ Document::Document(QObject *parent):
 
     m_context = new AIS_InteractiveContext(m_viewer);
     m_context->SetDisplayMode(AIS_Shaded);
+
+    m_view = new OccView(m_context);
 }
 
-QWidget *Document::createView(QWidget *parent, Qt::WindowFlags flags)
+OccView* Document::view()
 {
-    m_view = new OccView(m_context);
-    return QWidget::createWindowContainer(m_view, parent, flags);
+    return m_view;
 }
 
 void Document::onMakeBottle()
@@ -52,6 +52,5 @@ void Document::onMakeBottle()
     Handle(AIS_Shape) AISBottle = new AIS_Shape(aBottle);
     m_context->SetMaterial(AISBottle, Graphic3d_NOM_GOLD);
     m_context->Display(AISBottle);
-    m_view->fitAll();
     QApplication::restoreOverrideCursor();
 }

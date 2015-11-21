@@ -14,6 +14,10 @@ public:
 
 private:
     Document* m_document;
+    QToolBar* m_modeling;
+    QToolBar* m_visualization;
+    QAction* m_makeBottle;
+    QAction* m_fitAll;
 };
 
 #endif // MAINWINDOW_H

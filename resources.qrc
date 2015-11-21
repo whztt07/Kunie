@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>icons/Bottle.png</file>
+        <file>icons/FitAll.png</file>
     </qresource>
 </RCC>
