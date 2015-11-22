@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QCursor>
 #include <QApplication>
+#include <QMouseEvent>
 
 #include <Graphic3d_GraphicDriver.hxx>
 
@@ -19,7 +20,8 @@ QCursor* OccView::s_rotate = NULL;
 QCursor* OccView::s_zoom = NULL;
 
 OccView::OccView(Handle(AIS_InteractiveContext) context):
-    m_context(context)
+    m_context(context),
+    m_mode(Default)
 {   
     QSurfaceFormat format;
     format.setDepthBufferSize(16);
@@ -39,7 +41,6 @@ void OccView::fitAll()
 {
   m_view->FitAll();
   m_view->ZFitAll();
-  m_view->Redraw();
 }
 
 void OccView::wheelEvent(QWheelEvent* ev)
@@ -47,6 +48,28 @@ void OccView::wheelEvent(QWheelEvent* ev)
     int x = ev->x() + ev->delta() / 8;
     int y = ev->y() + ev->delta() / 8;
     m_view->Zoom(ev->x(), ev->y(), x, y);
+}
+
+void OccView::mouseMoveEvent(QMouseEvent *ev)
+{
+    switch (m_mode) {
+    case Rotation:
+       m_view->Rotation(ev->x(), ev->y());
+        break;
+    default:
+        break;
+    }
+}
+
+void OccView::mousePressEvent(QMouseEvent *ev)
+{
+    m_mode = Rotation;
+    m_view->StartRotation(ev->x(), ev->y(), 0.4);
+}
+
+void OccView::mouseReleaseEvent(QMouseEvent *ev)
+{
+    m_mode = Default;
 }
 
 void OccView::initCursors()

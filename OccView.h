@@ -19,12 +19,21 @@ protected:
     void resizeGL(int w, int h);
 
     void wheelEvent(QWheelEvent* ev);
+    void mouseMoveEvent(QMouseEvent* ev);
+    void mousePressEvent(QMouseEvent* ev);
+    void mouseReleaseEvent(QMouseEvent* ev);
 
 private:
+    enum Mode {
+        Default,
+        Rotation,
+    };
+
     static void initCursors();
 
     Handle(AIS_InteractiveContext) m_context;
     Handle(V3d_View) m_view;
+    Mode m_mode;
 
     static QCursor* s_rotate;
     static QCursor* s_zoom;
