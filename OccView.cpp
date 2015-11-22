@@ -21,7 +21,9 @@ QCursor* OccView::s_zoom = NULL;
 
 OccView::OccView(Handle(AIS_InteractiveContext) context):
     m_context(context),
-    m_mode(Default)
+    m_mode(Default),
+    m_x0(0),
+    m_y0(0)
 {   
     QSurfaceFormat format;
     format.setDepthBufferSize(16);
@@ -39,8 +41,8 @@ OccView::~OccView()
 
 void OccView::fitAll()
 {
-  m_view->FitAll();
-  m_view->ZFitAll();
+    m_view->FitAll();
+    m_view->ZFitAll();
 }
 
 void OccView::wheelEvent(QWheelEvent* ev)
@@ -50,26 +52,43 @@ void OccView::wheelEvent(QWheelEvent* ev)
     m_view->Zoom(ev->x(), ev->y(), x, y);
 }
 
-void OccView::mouseMoveEvent(QMouseEvent *ev)
+void OccView::mouseMoveEvent(QMouseEvent* ev)
 {
     switch (m_mode) {
     case Rotation:
-       m_view->Rotation(ev->x(), ev->y());
+        m_view->Rotation(ev->x(), ev->y());
+        break;
+    case Panning:
+        m_view->Pan(ev->x() - m_x0, m_y0 - ev->y());
+        m_x0 = ev->x();
+        m_y0 = ev->y();
         break;
     default:
         break;
     }
 }
 
-void OccView::mousePressEvent(QMouseEvent *ev)
+void OccView::mousePressEvent(QMouseEvent* ev)
 {
-    m_mode = Rotation;
-    m_view->StartRotation(ev->x(), ev->y(), 0.4);
+    if(ev->button() == Qt::RightButton) {
+        if(ev->modifiers().testFlag(Qt::ShiftModifier)) {
+            QApplication::setOverrideCursor(*s_rotate);
+            m_mode = Rotation;
+            m_view->StartRotation(ev->x(), ev->y(), 0.4);
+        } else if(ev->modifiers().testFlag(Qt::ControlModifier)) {
+            QApplication::setOverrideCursor(Qt::SizeAllCursor);
+            m_mode = Panning;
+            m_x0 = ev->x();
+            m_y0 = ev->y();
+        }
+    }
 }
 
-void OccView::mouseReleaseEvent(QMouseEvent *ev)
+void OccView::mouseReleaseEvent(QMouseEvent*)
 {
     m_mode = Default;
+    m_view->Redraw();
+    QApplication::restoreOverrideCursor();
 }
 
 void OccView::initCursors()

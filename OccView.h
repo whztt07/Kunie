@@ -27,6 +27,7 @@ private:
     enum Mode {
         Default,
         Rotation,
+        Panning
     };
 
     static void initCursors();
@@ -34,6 +35,8 @@ private:
     Handle(AIS_InteractiveContext) m_context;
     Handle(V3d_View) m_view;
     Mode m_mode;
+    int m_x0;
+    int m_y0;
 
     static QCursor* s_rotate;
     static QCursor* s_zoom;
