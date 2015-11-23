@@ -2,6 +2,7 @@
 #define OCCVIEW_H
 
 #include <QOpenGLWindow>
+#include <QPoint>
 #include <AIS_InteractiveContext.hxx>
 #include <V3d_View.hxx>
 
@@ -35,8 +36,7 @@ private:
     Handle(AIS_InteractiveContext) m_context;
     Handle(V3d_View) m_view;
     Mode m_mode;
-    int m_x0;
-    int m_y0;
+    QPoint m_precPos;
 
     static QCursor* s_rotate;
     static QCursor* s_zoom;
