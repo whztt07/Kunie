@@ -4,16 +4,25 @@
 #include <QObject>
 #include <V3d_Viewer.hxx>
 #include <AIS_InteractiveContext.hxx>
+#include <TopTools_HSequenceOfShape.hxx>
 
 class OccView;
 
 class Document : public QObject
 {
+    Q_OBJECT
+
 public:
     explicit Document(QObject *parent=0);
     OccView* view();
 
-    void onMakeBottle();
+    void display(const Handle(TopTools_HSequenceOfShape)& shapes);
+
+    void makeBottle();
+    void import(const QString& file);
+
+signals:
+    void error(const QString& msg);
 
 private:
     Handle(V3d_Viewer) m_viewer;

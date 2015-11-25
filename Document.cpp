@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QFileInfo>
 #include <Aspect_DisplayConnection.hxx>
 #include <OpenGl_GraphicDriver.hxx>
 
@@ -14,6 +15,7 @@
 
 #include "Document.h"
 #include "OccView.h"
+#include "Translator.h"
 
 #include <TopoDS_Shape.hxx>
 #include <AIS_Shape.hxx>
@@ -45,7 +47,17 @@ OccView* Document::view()
     return m_view;
 }
 
-void Document::onMakeBottle()
+void Document::display(const Handle(TopTools_HSequenceOfShape)& shapes)
+{
+    if(shapes.IsNull() || !shapes->Length()) return;
+
+    for(int i=1; i<=shapes->Length(); i++)
+        m_context->Display(new AIS_Shape(shapes->Value(i)), false);
+
+    m_context->UpdateCurrentViewer();
+}
+
+void Document::makeBottle()
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
     TopoDS_Shape aBottle = MakeBottle(50, 70, 30);
@@ -53,4 +65,25 @@ void Document::onMakeBottle()
     m_context->SetMaterial(AISBottle, Graphic3d_NOM_GOLD);
     m_context->Display(AISBottle);
     QApplication::restoreOverrideCursor();
+}
+
+void Document::import(const QString &file)
+{
+    QString ext = QFileInfo(file).suffix();
+
+    if(ext == "brep" || ext == "rle") {
+        display(Translator::importBREP(file));
+    } else if(ext == "igs" || ext == "iges") {
+
+    } else if(ext == "stp" || ext == "step") {
+
+    } else if(ext == "csfdb") {
+
+    } else if(ext == "vrml") {
+
+    } else if(ext == "stl") {
+
+    } else {
+        emit error(QFileInfo(file).fileName() + " unknown file type");
+    }
 }

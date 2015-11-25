@@ -14,12 +14,14 @@ SOURCES += \
     MainWindow.cpp \
     OccView.cpp \
     MakeBottle.cpp \
-    Document.cpp
+    Document.cpp \
+    Translator.cpp
 
 HEADERS += \
     MainWindow.h \
     OccView.h \
-    Document.h
+    Document.h \
+    Translator.h
 
 QMAKE_CXXFLAGS += -isystem $$CASROOT/inc
 
