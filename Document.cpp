@@ -51,6 +51,7 @@ void Document::display(const Handle(TopTools_HSequenceOfShape)& shapes)
 {
     if(shapes.IsNull() || !shapes->Length()) return;
 
+        // TODO give a different color to each shape
     for(int i=1; i<=shapes->Length(); i++)
         m_context->Display(new AIS_Shape(shapes->Value(i)), false);
 
@@ -74,15 +75,15 @@ void Document::import(const QString &file)
     if(ext == "brep" || ext == "rle") {
         display(Translator::importBREP(file));
     } else if(ext == "igs" || ext == "iges") {
-
+        display(Translator::importIGES(file));
     } else if(ext == "stp" || ext == "step") {
-
+        display(Translator::importSTEP(file));
     } else if(ext == "csfdb") {
-
+        display(Translator::importCSFDB(file));
     } else if(ext == "vrml") {
 
     } else if(ext == "stl") {
-
+        display(Translator::importSTL(file));
     } else {
         emit error(QFileInfo(file).fileName() + " unknown file type");
     }
