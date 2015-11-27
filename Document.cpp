@@ -49,6 +49,7 @@ OccView* Document::view()
 
 void Document::display(const Handle(TopTools_HSequenceOfShape)& shapes)
 {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
     if(shapes.IsNull() || !shapes->Length()) return;
 
         // TODO give a different color to each shape
@@ -56,6 +57,7 @@ void Document::display(const Handle(TopTools_HSequenceOfShape)& shapes)
         m_context->Display(new AIS_Shape(shapes->Value(i)), false);
 
     m_context->UpdateCurrentViewer();
+    QApplication::restoreOverrideCursor();
 }
 
 void Document::makeBottle()
@@ -70,21 +72,33 @@ void Document::makeBottle()
 
 void Document::import(const QString &file)
 {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+
     QString ext = QFileInfo(file).suffix();
+    Handle(TopTools_HSequenceOfShape) shapes;
 
     if(ext == "brep" || ext == "rle") {
-        display(Translator::importBREP(file));
+        shapes = Translator::importBREP(file);
     } else if(ext == "igs" || ext == "iges") {
-        display(Translator::importIGES(file));
+        shapes = Translator::importIGES(file);
     } else if(ext == "stp" || ext == "step") {
-        display(Translator::importSTEP(file));
+        shapes = Translator::importSTEP(file);
     } else if(ext == "csfdb") {
-        display(Translator::importCSFDB(file));
+        shapes = Translator::importCSFDB(file);
     } else if(ext == "vrml") {
-
+        shapes = Translator::importVRML(file);
     } else if(ext == "stl") {
-        display(Translator::importSTL(file));
+        shapes = Translator::importSTL(file);
     } else {
         emit error(QFileInfo(file).fileName() + " unknown file type");
+    }
+
+    QApplication::restoreOverrideCursor();
+
+    if(shapes.IsNull() || !shapes->Length()) {
+        emit error(QFileInfo(file).fileName() + " read error");
+    } else {
+        display(shapes);
+        m_view->fitAll();
     }
 }

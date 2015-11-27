@@ -12,6 +12,7 @@ public:
     static Handle(TopTools_HSequenceOfShape) importIGES(const QString& file);
     static Handle(TopTools_HSequenceOfShape) importSTEP(const QString& file);
     static Handle(TopTools_HSequenceOfShape) importCSFDB(const QString& file);
+    static Handle(TopTools_HSequenceOfShape) importVRML(const QString& file);
     static Handle(TopTools_HSequenceOfShape) importSTL(const QString& file);
 };
 
