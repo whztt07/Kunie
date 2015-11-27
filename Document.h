@@ -4,6 +4,7 @@
 #include <QObject>
 #include <V3d_Viewer.hxx>
 #include <AIS_InteractiveContext.hxx>
+#include <TopoDS_Shape.hxx>
 #include <TopTools_HSequenceOfShape.hxx>
 
 class OccView;
@@ -16,6 +17,7 @@ public:
     explicit Document(QObject *parent=0);
     OccView* view();
 
+    void display(const TopoDS_Shape& shape);
     void display(const Handle(TopTools_HSequenceOfShape)& shapes);
 
     void makeBottle();

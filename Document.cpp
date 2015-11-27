@@ -47,14 +47,27 @@ OccView* Document::view()
     return m_view;
 }
 
+void Document::display(const TopoDS_Shape& shape)
+{
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    Handle(AIS_Shape) ais = new AIS_Shape(shape);
+    m_context->Display(ais, false);
+    m_context->SetMaterial(ais, Graphic3d_NOM_ALUMINIUM);
+    m_context->UpdateCurrentViewer();
+    QApplication::restoreOverrideCursor();
+}
+
 void Document::display(const Handle(TopTools_HSequenceOfShape)& shapes)
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
     if(shapes.IsNull() || !shapes->Length()) return;
 
         // TODO give a different color to each shape
-    for(int i=1; i<=shapes->Length(); i++)
-        m_context->Display(new AIS_Shape(shapes->Value(i)), false);
+    for(int i=1; i<=shapes->Length(); i++) {
+        Handle(AIS_Shape) ais = new AIS_Shape(shapes->Value(i));
+        m_context->SetMaterial(ais, Graphic3d_NOM_ALUMINIUM);
+        m_context->Display(ais, false);
+    }
 
     m_context->UpdateCurrentViewer();
     QApplication::restoreOverrideCursor();
@@ -63,11 +76,9 @@ void Document::display(const Handle(TopTools_HSequenceOfShape)& shapes)
 void Document::makeBottle()
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    TopoDS_Shape aBottle = MakeBottle(50, 70, 30);
-    Handle(AIS_Shape) AISBottle = new AIS_Shape(aBottle);
-    m_context->SetMaterial(AISBottle, Graphic3d_NOM_GOLD);
-    m_context->Display(AISBottle);
+    TopoDS_Shape bottle = MakeBottle(50, 70, 30);
     QApplication::restoreOverrideCursor();
+    display(bottle);
 }
 
 void Document::import(const QString &file)
