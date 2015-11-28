@@ -3,7 +3,6 @@
 #include "Document.h"
 #include "OccView.h"
 
-#include <QWidget>
 #include <QMenuBar>
 #include <QToolBar>
 #include <QAction>
@@ -17,8 +16,8 @@ MainWindow::MainWindow(QWidget *parent):
     connect(m_document, &Document::error, this, &MainWindow::onError);
 
     setWindowTitle("Kunie");
-    setCentralWidget(QWidget::createWindowContainer(m_document->view(), this));
-    resize(600, 450);
+    setCentralWidget(m_document->widget());
+    resize(1024, 768);
 
     m_file = menuBar()->addMenu("&File");
     m_import = m_file->addAction("&Import");

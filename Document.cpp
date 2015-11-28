@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QWidget>
 #include <QFileInfo>
 #include <Aspect_DisplayConnection.hxx>
 #include <OpenGl_GraphicDriver.hxx>
@@ -53,7 +54,7 @@ int Document::s_maxColor = sizeof(Document::s_colors) / sizeof(Quantity_Color);
 
 static Handle(Graphic3d_GraphicDriver) graphicDriver;
 
-Document::Document(QObject* parent):
+Document::Document(QWidget* parent):
     QObject(parent),
     m_colorNum(0)
 {
@@ -70,11 +71,17 @@ Document::Document(QObject* parent):
     m_context->SetDisplayMode(AIS_Shaded);
 
     m_view = new OccView(m_context);
+    m_widget = QWidget::createWindowContainer(m_view, parent);
 }
 
 OccView* Document::view()
 {
     return m_view;
+}
+
+QWidget *Document::widget()
+{
+    return m_widget;
 }
 
 void Document::display(const TopoDS_Shape& shape)
