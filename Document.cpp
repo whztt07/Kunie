@@ -22,10 +22,40 @@
 
 TopoDS_Shape MakeBottle(const Standard_Real myWidth, const Standard_Real myHeight, const Standard_Real myThickness);
 
+Quantity_Color Document::s_colors[] = {
+    Quantity_Color(1,       0,      0,      Quantity_TOC_RGB),
+    Quantity_Color(0,       1,      0,      Quantity_TOC_RGB),
+    Quantity_Color(0,       0,      1,      Quantity_TOC_RGB),
+    Quantity_Color(0.5,     0.5,    0,      Quantity_TOC_RGB),
+    Quantity_Color(0,       0.5,    0.5,    Quantity_TOC_RGB),
+    Quantity_Color(0.5,     0,      0.5,    Quantity_TOC_RGB),
+    Quantity_Color(0.25,    0.75,   0,      Quantity_TOC_RGB),
+    Quantity_Color(0,       0.25,   0.75,   Quantity_TOC_RGB),
+    Quantity_Color(0.75,    0,      0.25,   Quantity_TOC_RGB),
+    Quantity_Color(0,       0.75,   0.25,   Quantity_TOC_RGB),
+    Quantity_Color(0.25,    0,      0.75,   Quantity_TOC_RGB),
+    Quantity_Color(0.75,    0.25,   0,      Quantity_TOC_RGB),
+    Quantity_Color(0,       0.125,  0.875,  Quantity_TOC_RGB),
+    Quantity_Color(0.875,   0,      0.125,  Quantity_TOC_RGB),
+    Quantity_Color(0.125,   0.875,  0,      Quantity_TOC_RGB),
+    Quantity_Color(0.625,   0,      0.375,  Quantity_TOC_RGB),
+    Quantity_Color(0.375,   0.625,  0,      Quantity_TOC_RGB),
+    Quantity_Color(0,       0.375,  0.625,  Quantity_TOC_RGB),
+    Quantity_Color(0.875,   0.125,  0,      Quantity_TOC_RGB),
+    Quantity_Color(0.0,     0.875,  0.125,  Quantity_TOC_RGB),
+    Quantity_Color(0.125,   0,      0.875,  Quantity_TOC_RGB),
+    Quantity_Color(0.625,   0.375,  0,      Quantity_TOC_RGB),
+    Quantity_Color(0,       0.625,  0.375,  Quantity_TOC_RGB),
+    Quantity_Color(0.375,   0,      0.625,  Quantity_TOC_RGB)
+};
+
+int Document::s_maxColor = sizeof(Document::s_colors) / sizeof(Quantity_Color);
+
 static Handle(Graphic3d_GraphicDriver) graphicDriver;
 
-Document::Document(QObject *parent):
-    QObject(parent)
+Document::Document(QObject* parent):
+    QObject(parent),
+    m_colorNum(0)
 {
     if (graphicDriver.IsNull()) {
         Handle(Aspect_DisplayConnection) display = new Aspect_DisplayConnection;
@@ -50,9 +80,7 @@ OccView* Document::view()
 void Document::display(const TopoDS_Shape& shape)
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    Handle(AIS_Shape) ais = new AIS_Shape(shape);
-    m_context->Display(ais, false);
-    m_context->SetMaterial(ais, Graphic3d_NOM_ALUMINIUM);
+    insert(shape);
     m_context->UpdateCurrentViewer();
     QApplication::restoreOverrideCursor();
 }
@@ -62,12 +90,8 @@ void Document::display(const Handle(TopTools_HSequenceOfShape)& shapes)
     QApplication::setOverrideCursor(Qt::WaitCursor);
     if(shapes.IsNull() || !shapes->Length()) return;
 
-        // TODO give a different color to each shape
-    for(int i=1; i<=shapes->Length(); i++) {
-        Handle(AIS_Shape) ais = new AIS_Shape(shapes->Value(i));
-        m_context->SetMaterial(ais, Graphic3d_NOM_ALUMINIUM);
-        m_context->Display(ais, false);
-    }
+    for(int i=1; i<=shapes->Length(); i++)
+        insert(shapes->Value(i));
 
     m_context->UpdateCurrentViewer();
     QApplication::restoreOverrideCursor();
@@ -81,7 +105,7 @@ void Document::makeBottle()
     display(bottle);
 }
 
-void Document::import(const QString &file)
+void Document::import(const QString& file)
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
 
@@ -112,4 +136,13 @@ void Document::import(const QString &file)
         display(shapes);
         m_view->fitAll();
     }
+}
+
+void Document::insert(const TopoDS_Shape& shape)
+{
+    Handle(AIS_Shape) ais = new AIS_Shape(shape);
+    m_context->Display(ais, false);
+    m_context->SetMaterial(ais, Graphic3d_NOM_PLASTIC);
+    m_context->SetColor(ais, s_colors[m_colorNum++]);
+    m_colorNum %= s_maxColor;
 }
