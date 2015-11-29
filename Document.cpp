@@ -54,8 +54,9 @@ int Document::s_maxColor = sizeof(Document::s_colors) / sizeof(Quantity_Color);
 
 static Handle(Graphic3d_GraphicDriver) graphicDriver;
 
-Document::Document(QWidget* parent):
+Document::Document(const QString& title, QWidget* parent):
     QObject(parent),
+    m_title(title),
     m_colorNum(0)
 {
     if (graphicDriver.IsNull()) {
@@ -72,6 +73,11 @@ Document::Document(QWidget* parent):
 
     m_view = new OccView(m_context);
     m_widget = QWidget::createWindowContainer(m_view, parent);
+}
+
+QString Document::title()
+{
+    return m_title;
 }
 
 OccView* Document::view()

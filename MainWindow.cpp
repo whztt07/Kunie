@@ -8,28 +8,34 @@
 #include <QAction>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QFrame>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent):
-    QMainWindow(parent)
+    QMainWindow(parent),
+    m_document(NULL)
 {
-    m_document = new Document(this);
-    connect(m_document, &Document::error, this, &MainWindow::onError);
-
     setWindowTitle("Kunie");
-    setCentralWidget(m_document->widget());
     resize(1024, 768);
 
     m_file = menuBar()->addMenu("&File");
-    m_import = m_file->addAction("&Import");
-    connect(m_import, &QAction::triggered, this, &MainWindow::onImport);
+
+    QAction* newDoc = m_file->addAction("&New");
+    connect(newDoc, &QAction::triggered, this, &MainWindow::onNew);
+
+    QAction* import = m_file->addAction("&Import");
+    connect(import, &QAction::triggered, this, &MainWindow::onImport);
+
+    m_documents = menuBar()->addMenu("&Documents");
+    m_documents->addAction("<No document>");
 
     m_modeling = addToolBar("Modeling");
     m_makeBottle = m_modeling->addAction(QPixmap(":/icons/Bottle.png"), "&Make bottle");
-    connect(m_makeBottle, &QAction::triggered, m_document, &Document::makeBottle);
+    //connect(m_makeBottle, &QAction::triggered, m_document, &Document::makeBottle);
 
     m_visualization = addToolBar("Visualization");
     m_fitAll = m_visualization->addAction(QPixmap(":/icons/FitAll.png"), "Fit &All");
-    connect(m_fitAll, &QAction::triggered, m_document->view(), &OccView::fitAll);
+    connect(m_fitAll, &QAction::triggered, this, &MainWindow::onFitAll);
 }
 
 void MainWindow::onImport()
@@ -45,6 +51,37 @@ void MainWindow::onImport()
                                                 );
 
     if(!file.isEmpty()) m_document->import(file);
+}
+
+void MainWindow::onNew()
+{
+    int i, j, k = 1;
+
+    // hide <No document> menu entry
+    m_documents->actions().at(0)->setVisible(false);
+
+    // look for a unique new document title
+    for(i = 1; i < m_documents->actions().length(); i++) {
+        Document* document = m_documents->actions().at(i)->data().value<Document*>();
+        if(sscanf(document->title().toUtf8().constData(), "Untitled %d", &j)) {
+            if(j >= k) k = j + 1;
+        }
+    }
+
+    m_document = new Document(QString("Untitled %1").arg(k), this);
+    connect(m_document, &Document::error, this, &MainWindow::onError);
+
+    // store new document in menu entry data
+    QAction* action = m_documents->addAction(m_document->title());
+    action->setData(QVariant::fromValue<Document*>(m_document));
+
+    setWindowTitle(m_document->title());
+    setCentralWidget(m_document->widget());
+}
+
+void MainWindow::onFitAll()
+{
+    if(m_document) m_document->view()->fitAll();
 }
 
 void MainWindow::onError(const QString &msg)

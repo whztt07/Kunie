@@ -15,7 +15,8 @@ class Document : public QObject
     Q_OBJECT
 
 public:
-    explicit Document(QWidget* parent=0);
+    explicit Document(const QString& title, QWidget* parent=0);
+    QString title();
     OccView* view();
     QWidget* widget();
 
@@ -31,6 +32,7 @@ signals:
 private:
     void insert(const TopoDS_Shape& shape);
 
+    QString m_title;
     Handle(V3d_Viewer) m_viewer;
     Handle(AIS_InteractiveContext) m_context;
     OccView* m_view;
