@@ -9,7 +9,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QStackedWidget>
-#include <QDebug>
+#include <QApplication>
 
 MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
@@ -18,26 +18,34 @@ MainWindow::MainWindow(QWidget *parent):
     setWindowTitle("Kunie");
     resize(1024, 768);
     m_stack = new QStackedWidget(this);
+    m_stack->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     setCentralWidget(m_stack);
 
     m_file = menuBar()->addMenu("&File");
 
     QAction* newDoc = m_file->addAction("&New");
+    newDoc->setShortcuts(QKeySequence::New);
     connect(newDoc, &QAction::triggered, this, &MainWindow::onNew);
 
-    QAction* import = m_file->addAction("&Import");
-    connect(import, &QAction::triggered, this, &MainWindow::onImport);
+    m_close = m_file->addAction("&Close");
+    m_close->setShortcuts(QKeySequence::Close);
+    connect(m_close, &QAction::triggered, this, &MainWindow::onClose);
+
+    m_import = m_file->addAction("&Import");
+    connect(m_import, &QAction::triggered, this, &MainWindow::onImport);
 
     m_documents = menuBar()->addMenu("&Documents");
-    m_documents->addAction("<No document>");
+    m_documents->addAction("<No document>")->setEnabled(false);
 
     m_modeling = addToolBar("Modeling");
     m_makeBottle = m_modeling->addAction(QPixmap(":/icons/Bottle.png"), "&Make bottle");
-    //connect(m_makeBottle, &QAction::triggered, m_document, &Document::makeBottle);
+    connect(m_makeBottle, &QAction::triggered, this, &MainWindow::onMakeBottle);
 
     m_visualization = addToolBar("Visualization");
     m_fitAll = m_visualization->addAction(QPixmap(":/icons/FitAll.png"), "Fit &All");
     connect(m_fitAll, &QAction::triggered, this, &MainWindow::onFitAll);
+
+    setActions();
 }
 
 void MainWindow::onImport()
@@ -52,7 +60,11 @@ void MainWindow::onImport()
                                                 "STL (*.stl);;"
                                                 );
 
-    if(!file.isEmpty()) m_document->import(file);
+    if(!file.isEmpty()) {
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+        m_document->import(file);
+        QApplication::restoreOverrideCursor();
+    }
 }
 
 void MainWindow::onNew()
@@ -75,12 +87,48 @@ void MainWindow::onNew()
 
     // store new document in menu entry data
     QAction* action = m_documents->addAction(m_document->title());
+    action->setCheckable(true);
+    action->setChecked(true);
     action->setData(QVariant::fromValue<Document*>(m_document));
     connect(action, &QAction::triggered, this, &MainWindow::onDocument);
 
     setWindowTitle(m_document->title());
     m_stack->addWidget(m_document->widget());
     m_stack->setCurrentWidget(m_document->widget());
+
+    setActions();
+}
+
+void MainWindow::onClose()
+{
+    QAction* action = NULL;
+
+    // look for the corresponding menu action
+    for(int i = 1; i < m_documents->actions().length(); i++) {
+        if(m_document == m_documents->actions().at(i)->data().value<Document*>()) {
+            action = m_documents->actions().at(i);
+            break;
+        }
+    }
+
+    m_documents->removeAction(action);
+    m_stack->removeWidget(m_document->widget());
+    delete m_document->widget();
+    delete m_document;
+    m_document = NULL;
+
+    // look for the new current document
+    for(int i = 1; i < m_documents->actions().length(); i++) {
+        m_document = m_documents->actions().at(i)->data().value<Document*>();
+        if(m_document->widget() == m_stack->currentWidget()) {
+            break;
+        }
+    }
+
+    QString title = (m_document) ? m_document->title() : "Kunie";
+    setWindowTitle(title);
+
+    setActions();
 }
 
 void MainWindow::onDocument()
@@ -90,6 +138,13 @@ void MainWindow::onDocument()
     m_stack->setCurrentWidget(m_document->widget());
 }
 
+void MainWindow::onMakeBottle()
+{
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    m_document->makeBottle();
+    QApplication::restoreOverrideCursor();
+}
+
 void MainWindow::onFitAll()
 {
     if(m_document) m_document->view()->fitAll();
@@ -97,5 +152,15 @@ void MainWindow::onFitAll()
 
 void MainWindow::onError(const QString &msg)
 {
+    QApplication::restoreOverrideCursor();
     QMessageBox::critical(this, "Error", msg);
+}
+
+void MainWindow::setActions()
+{
+    bool enabled = m_document != NULL;
+    m_close->setEnabled(enabled);
+    m_import->setEnabled(enabled);
+    m_makeBottle->setEnabled(enabled);
+    m_fitAll->setEnabled(enabled);
 }

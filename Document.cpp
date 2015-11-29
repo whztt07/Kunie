@@ -1,4 +1,3 @@
-#include <QApplication>
 #include <QWidget>
 #include <QFileInfo>
 #include <Aspect_DisplayConnection.hxx>
@@ -13,6 +12,7 @@
 #undef FocusOut
 #undef FontChange
 #undef Expose
+#undef Status
 
 #include "Document.h"
 #include "OccView.h"
@@ -92,36 +92,28 @@ QWidget *Document::widget()
 
 void Document::display(const TopoDS_Shape& shape)
 {
-    QApplication::setOverrideCursor(Qt::WaitCursor);
     insert(shape);
     m_context->UpdateCurrentViewer();
-    QApplication::restoreOverrideCursor();
 }
 
 void Document::display(const Handle(TopTools_HSequenceOfShape)& shapes)
 {
-    QApplication::setOverrideCursor(Qt::WaitCursor);
     if(shapes.IsNull() || !shapes->Length()) return;
 
     for(int i=1; i<=shapes->Length(); i++)
         insert(shapes->Value(i));
 
     m_context->UpdateCurrentViewer();
-    QApplication::restoreOverrideCursor();
 }
 
 void Document::makeBottle()
 {
-    QApplication::setOverrideCursor(Qt::WaitCursor);
     TopoDS_Shape bottle = MakeBottle(50, 70, 30);
-    QApplication::restoreOverrideCursor();
     display(bottle);
 }
 
 void Document::import(const QString& file)
 {
-    QApplication::setOverrideCursor(Qt::WaitCursor);
-
     QString ext = QFileInfo(file).suffix();
     Handle(TopTools_HSequenceOfShape) shapes;
 
@@ -140,8 +132,6 @@ void Document::import(const QString& file)
     } else {
         emit error(QFileInfo(file).fileName() + " unknown file type");
     }
-
-    QApplication::restoreOverrideCursor();
 
     if(shapes.IsNull() || !shapes->Length()) {
         emit error(QFileInfo(file).fileName() + " read error");
