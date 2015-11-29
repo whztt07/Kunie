@@ -5,6 +5,7 @@
 
 class Document;
 class QStackedWidget;
+class QActionGroup;
 
 class MainWindow : public QMainWindow
 {
@@ -26,14 +27,19 @@ private:
     void setActions();
 
     QStackedWidget* m_stack;
+
     Document* m_document;
+
     QMenu* m_file;
-    QMenu* m_documents;
-    QToolBar* m_modeling;
-    QToolBar* m_visualization;
     QAction* m_close;
     QAction* m_import;
+    QAction* m_separator;
+    QActionGroup* m_documents;
+
+    QToolBar* m_modeling;
     QAction* m_makeBottle;
+
+    QToolBar* m_visualization;
     QAction* m_fitAll;
 };
 

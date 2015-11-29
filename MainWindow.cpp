@@ -6,6 +6,7 @@
 #include <QMenuBar>
 #include <QToolBar>
 #include <QAction>
+#include <QActionGroup>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QStackedWidget>
@@ -34,8 +35,10 @@ MainWindow::MainWindow(QWidget *parent):
     m_import = m_file->addAction("&Import");
     connect(m_import, &QAction::triggered, this, &MainWindow::onImport);
 
-    m_documents = menuBar()->addMenu("&Documents");
-    m_documents->addAction("<No document>")->setEnabled(false);
+    m_separator = m_file->addSeparator();
+    m_separator->setText("Documents");
+    m_documents = new QActionGroup(this);
+    m_documents->setExclusive(true);
 
     m_modeling = addToolBar("Modeling");
     m_makeBottle = m_modeling->addAction(QPixmap(":/icons/Bottle.png"), "&Make bottle");
@@ -69,24 +72,24 @@ void MainWindow::onImport()
 
 void MainWindow::onNew()
 {
-    int i, j, k = 1;
-
-    // hide <No document> menu entry
-    m_documents->actions().at(0)->setVisible(false);
+    QAction* action = NULL;
+    int i, j = 1;
 
     // look for a unique new document title
-    for(i = 1; i < m_documents->actions().length(); i++) {
-        Document* document = m_documents->actions().at(i)->data().value<Document*>();
-        if(sscanf(document->title().toUtf8().constData(), "Untitled %d", &j)) {
-            if(j >= k) k = j + 1;
+    foreach(action, m_documents->actions()) {
+        Document* document = action->data().value<Document*>();
+        if (sscanf(document->title().toUtf8().constData(), "Untitled %d", &i)) {
+            if (i >= j)
+                j = i + 1;
         }
     }
 
-    m_document = new Document(QString("Untitled %1").arg(k), this);
+    m_document = new Document(QString("Untitled %1").arg(j), this);
     connect(m_document, &Document::error, this, &MainWindow::onError);
 
     // store new document in menu entry data
-    QAction* action = m_documents->addAction(m_document->title());
+    action = m_file->addAction(m_document->title());
+    m_documents->addAction(action);
     action->setCheckable(true);
     action->setChecked(true);
     action->setData(QVariant::fromValue<Document*>(m_document));
@@ -104,23 +107,23 @@ void MainWindow::onClose()
     QAction* action = NULL;
 
     // look for the corresponding menu action
-    for(int i = 1; i < m_documents->actions().length(); i++) {
-        if(m_document == m_documents->actions().at(i)->data().value<Document*>()) {
-            action = m_documents->actions().at(i);
+    foreach (action, m_documents->actions()) {
+        if (m_document == action->data().value<Document*>())
             break;
-        }
     }
 
     m_documents->removeAction(action);
+    m_file->removeAction(action);
     m_stack->removeWidget(m_document->widget());
     delete m_document->widget();
     delete m_document;
     m_document = NULL;
 
     // look for the new current document
-    for(int i = 1; i < m_documents->actions().length(); i++) {
-        m_document = m_documents->actions().at(i)->data().value<Document*>();
-        if(m_document->widget() == m_stack->currentWidget()) {
+    foreach (action, m_documents->actions()) {
+        m_document = action->data().value<Document*>();
+        if (m_document->widget() == m_stack->currentWidget()) {
+            action->setChecked(true);
             break;
         }
     }
@@ -159,6 +162,7 @@ void MainWindow::onError(const QString &msg)
 void MainWindow::setActions()
 {
     bool enabled = m_document != NULL;
+    m_separator->setVisible(enabled);
     m_close->setEnabled(enabled);
     m_import->setEnabled(enabled);
     m_makeBottle->setEnabled(enabled);
