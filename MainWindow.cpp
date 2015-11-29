@@ -104,14 +104,7 @@ void MainWindow::onNew()
 
 void MainWindow::onClose()
 {
-    QAction* action = NULL;
-
-    // look for the corresponding menu action
-    foreach (action, m_documents->actions()) {
-        if (m_document == action->data().value<Document*>())
-            break;
-    }
-
+    QAction* action = m_documents->checkedAction();
     m_documents->removeAction(action);
     m_file->removeAction(action);
     m_stack->removeWidget(m_document->widget());
