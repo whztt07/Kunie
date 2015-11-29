@@ -8,7 +8,7 @@
 #include <QAction>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QFrame>
+#include <QStackedWidget>
 #include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent):
@@ -17,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent):
 {
     setWindowTitle("Kunie");
     resize(1024, 768);
+    m_stack = new QStackedWidget(this);
+    setCentralWidget(m_stack);
 
     m_file = menuBar()->addMenu("&File");
 
@@ -74,9 +76,18 @@ void MainWindow::onNew()
     // store new document in menu entry data
     QAction* action = m_documents->addAction(m_document->title());
     action->setData(QVariant::fromValue<Document*>(m_document));
+    connect(action, &QAction::triggered, this, &MainWindow::onDocument);
 
     setWindowTitle(m_document->title());
-    setCentralWidget(m_document->widget());
+    m_stack->addWidget(m_document->widget());
+    m_stack->setCurrentWidget(m_document->widget());
+}
+
+void MainWindow::onDocument()
+{
+    m_document = qobject_cast<QAction*>(sender())->data().value<Document*>();
+    setWindowTitle(m_document->title());
+    m_stack->setCurrentWidget(m_document->widget());
 }
 
 void MainWindow::onFitAll()

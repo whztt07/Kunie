@@ -4,6 +4,7 @@
 #include <QMainWindow>
 
 class Document;
+class QStackedWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -14,10 +15,13 @@ public:
 
     void onImport();
     void onNew();
+    void onDocument();
+
     void onFitAll();
     void onError(const QString& msg);
 
 private:
+    QStackedWidget* m_stack;
     Document* m_document;
     QMenu* m_file;
     QMenu* m_documents;
