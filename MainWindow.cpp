@@ -35,6 +35,10 @@ MainWindow::MainWindow(QWidget *parent):
     m_import = m_file->addAction("&Import");
     connect(m_import, &QAction::triggered, this, &MainWindow::onImport);
 
+    QAction* exitAct = m_file->addAction(tr("E&xit"));
+    exitAct->setShortcuts(QKeySequence::Quit);
+    connect(exitAct, &QAction::triggered, this, &MainWindow::close);
+
     m_separator = m_file->addSeparator();
     m_separator->setText("Documents");
     m_documents = new QActionGroup(this);
