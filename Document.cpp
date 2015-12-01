@@ -72,7 +72,6 @@ Document::Document(const QString& title, QWidget* parent):
     m_context->SetDisplayMode(AIS_Shaded);
 
     m_view = new OccView(m_context);
-    m_widget = QWidget::createWindowContainer(m_view, parent);
 }
 
 QString Document::title()
@@ -83,11 +82,6 @@ QString Document::title()
 OccView* Document::view()
 {
     return m_view;
-}
-
-QWidget *Document::widget()
-{
-    return m_widget;
 }
 
 void Document::display(const TopoDS_Shape& shape)
@@ -145,7 +139,7 @@ void Document::insert(const TopoDS_Shape& shape)
 {
     Handle(AIS_Shape) ais = new AIS_Shape(shape);
     m_context->Display(ais, false);
-    m_context->SetMaterial(ais, Graphic3d_NOM_PLASTIC);
+    m_context->SetMaterial(ais, Graphic3d_NOM_BRASS);
     m_context->SetColor(ais, s_colors[m_colorNum++]);
     m_colorNum %= s_maxColor;
 }

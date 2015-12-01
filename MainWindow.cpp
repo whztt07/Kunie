@@ -44,6 +44,9 @@ MainWindow::MainWindow(QWidget *parent):
     m_documents = new QActionGroup(this);
     m_documents->setExclusive(true);
 
+    m_view = menuBar()->addMenu("&View");
+    m_view->setEnabled(false);
+
     m_modeling = addToolBar("Modeling");
     m_makeBottle = m_modeling->addAction(QPixmap(":/icons/Bottle.png"), "&Make bottle");
     connect(m_makeBottle, &QAction::triggered, this, &MainWindow::onMakeBottle);
@@ -52,7 +55,7 @@ MainWindow::MainWindow(QWidget *parent):
     m_fitAll = m_visualization->addAction(QPixmap(":/icons/FitAll.png"), "Fit &All");
     connect(m_fitAll, &QAction::triggered, this, &MainWindow::onFitAll);
 
-    setActions();
+    updateActions();
 }
 
 void MainWindow::onImport()
@@ -100,10 +103,10 @@ void MainWindow::onNew()
     connect(action, &QAction::triggered, this, &MainWindow::onDocument);
 
     setWindowTitle(m_document->title());
-    m_stack->addWidget(m_document->widget());
-    m_stack->setCurrentWidget(m_document->widget());
+    m_stack->addWidget(m_document->view()->widget());
+    m_stack->setCurrentWidget(m_document->view()->widget());
 
-    setActions();
+    updateActions();
 }
 
 void MainWindow::onClose()
@@ -111,15 +114,15 @@ void MainWindow::onClose()
     QAction* action = m_documents->checkedAction();
     m_documents->removeAction(action);
     m_file->removeAction(action);
-    m_stack->removeWidget(m_document->widget());
-    delete m_document->widget();
+    m_stack->removeWidget(m_document->view()->widget());
+    delete m_document->view()->widget();
     delete m_document;
     m_document = NULL;
 
     // look for the new current document
     foreach (action, m_documents->actions()) {
         m_document = action->data().value<Document*>();
-        if (m_document->widget() == m_stack->currentWidget()) {
+        if (m_document->view()->widget() == m_stack->currentWidget()) {
             action->setChecked(true);
             break;
         }
@@ -128,14 +131,15 @@ void MainWindow::onClose()
     QString title = (m_document) ? m_document->title() : "Kunie";
     setWindowTitle(title);
 
-    setActions();
+    updateActions();
 }
 
 void MainWindow::onDocument()
 {
     m_document = qobject_cast<QAction*>(sender())->data().value<Document*>();
     setWindowTitle(m_document->title());
-    m_stack->setCurrentWidget(m_document->widget());
+    m_stack->setCurrentWidget(m_document->view()->widget());
+    updateActions();
 }
 
 void MainWindow::onMakeBottle()
@@ -147,7 +151,7 @@ void MainWindow::onMakeBottle()
 
 void MainWindow::onFitAll()
 {
-    if(m_document) m_document->view()->fitAll();
+    m_document->view()->fitAll();
 }
 
 void MainWindow::onError(const QString &msg)
@@ -156,7 +160,7 @@ void MainWindow::onError(const QString &msg)
     QMessageBox::critical(this, "Error", msg);
 }
 
-void MainWindow::setActions()
+void MainWindow::updateActions()
 {
     bool enabled = m_document != NULL;
     m_separator->setVisible(enabled);
@@ -164,4 +168,10 @@ void MainWindow::setActions()
     m_import->setEnabled(enabled);
     m_makeBottle->setEnabled(enabled);
     m_fitAll->setEnabled(enabled);
+
+    m_view->clear();
+    m_view->setEnabled(enabled);
+
+    if(m_document)
+        m_view->addActions(m_document->view()->widget()->actions());
 }

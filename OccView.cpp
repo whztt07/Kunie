@@ -4,6 +4,8 @@
 #include <QCursor>
 #include <QApplication>
 #include <QMouseEvent>
+#include <QWidget>
+#include <QAction>
 
 #include <Graphic3d_GraphicDriver.hxx>
 
@@ -19,7 +21,7 @@
 QCursor* OccView::s_rotate = NULL;
 QCursor* OccView::s_zoom = NULL;
 
-OccView::OccView(Handle(AIS_InteractiveContext) context):
+OccView::OccView(Handle(AIS_InteractiveContext) context, QWidget* parent):
     m_context(context),
     m_mode(Default)
 {   
@@ -31,6 +33,36 @@ OccView::OccView(Handle(AIS_InteractiveContext) context):
     initCursors();
 
     m_view = m_context->CurrentViewer()->CreateView();
+    m_widget = QWidget::createWindowContainer(this, parent);
+
+    m_hlr = new QAction("&Hidden line removal", this);
+    m_hlr->setCheckable(true);
+    connect(m_hlr, &QAction::toggled, this, &OccView::setHLR);
+    m_widget->addAction(m_hlr);
+
+    m_rayTracing = new QAction("&Ray tracing", this);
+    m_rayTracing->setCheckable(true);
+    m_rayTracing->setChecked(false);
+    connect(m_rayTracing, &QAction::toggled, this, &OccView::setRayTracing);
+    m_widget->addAction(m_rayTracing);
+
+    m_shadow = new QAction("&Shadow", this);
+    m_shadow->setCheckable(true);
+    m_shadow->setChecked(m_view->ChangeRenderingParams().IsShadowEnabled);
+    connect(m_shadow, &QAction::toggled, this, &OccView::setShadow);
+    m_widget->addAction(m_shadow);
+
+    m_reflection = new QAction("Re&flection", this);
+    m_reflection->setCheckable(true);
+    m_reflection->setChecked(m_view->ChangeRenderingParams().IsReflectionEnabled);
+    connect(m_reflection, &QAction::toggled, this, &OccView::setReflection);
+    m_widget->addAction(m_reflection);
+
+    m_antialiasing = new QAction("&Antialiasing", this);
+    m_antialiasing->setCheckable(true);
+    m_antialiasing->setChecked(m_view->ChangeRenderingParams().IsAntialiasingEnabled);
+    connect(m_antialiasing, &QAction::toggled, this, &OccView::setAntialiasing);
+    m_widget->addAction(m_antialiasing);
 }
 
 OccView::~OccView()
@@ -41,6 +73,41 @@ void OccView::fitAll()
 {
     m_view->FitAll();
     m_view->ZFitAll();
+}
+
+void OccView::setHLR(bool enabled)
+{
+    m_view->SetComputedMode(enabled);
+}
+
+void OccView::setRayTracing(bool enabled)
+{
+    Graphic3d_RenderingMode method = enabled ? Graphic3d_RM_RAYTRACING : Graphic3d_RM_RASTERIZATION;
+    m_view->ChangeRenderingParams().Method = method;
+    m_view->Redraw();
+}
+
+void OccView::setShadow(bool enabled)
+{
+    m_view->ChangeRenderingParams().IsShadowEnabled = enabled;
+    m_view->Redraw();
+}
+
+void OccView::setReflection(bool enabled)
+{
+    m_view->ChangeRenderingParams().IsReflectionEnabled = enabled;
+    m_view->Redraw();
+}
+
+void OccView::setAntialiasing(bool enabled)
+{
+    m_view->ChangeRenderingParams().IsAntialiasingEnabled = enabled;
+    m_view->Redraw();
+}
+
+QWidget *OccView::widget()
+{
+    return m_widget;
 }
 
 void OccView::wheelEvent(QWheelEvent* ev)

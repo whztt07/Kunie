@@ -24,7 +24,7 @@ public:
     void onError(const QString& msg);
 
 private:
-    void setActions();
+    void updateActions();
 
     QStackedWidget* m_stack;
 
@@ -35,6 +35,8 @@ private:
     QAction* m_import;
     QAction* m_separator;
     QActionGroup* m_documents;
+
+    QMenu* m_view;
 
     QToolBar* m_modeling;
     QAction* m_makeBottle;

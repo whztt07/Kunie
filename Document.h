@@ -18,7 +18,6 @@ public:
     explicit Document(const QString& title, QWidget* parent=0);
     QString title();
     OccView* view();
-    QWidget* widget();
 
     void display(const TopoDS_Shape& shape);
     void display(const Handle(TopTools_HSequenceOfShape)& shapes);
@@ -36,7 +35,6 @@ private:
     Handle(V3d_Viewer) m_viewer;
     Handle(AIS_InteractiveContext) m_context;
     OccView* m_view;
-    QWidget* m_widget;
     int m_colorNum;
 
     static Quantity_Color s_colors[];
