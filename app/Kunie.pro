@@ -1,4 +1,6 @@
-QT += core gui widgets
+QT += core gui widgets testlib
+
+CONFIG += testcase
 
 TARGET = Kunie
 TEMPLATE = app
