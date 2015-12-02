@@ -1,6 +1,8 @@
-QT += core gui widgets
+QT += core gui widgets testlib
 
-TARGET = Kunie
+CONFIG += testcase
+
+TARGET = testKunie
 TEMPLATE = app
 
 CASROOT = $$(CASROOT)
@@ -11,21 +13,23 @@ isEmpty(CASROOT) {
 
 SOURCES += \
     main.cpp \
-    MainWindow.cpp \
-    OccView.cpp \
-    MakeBottle.cpp \
-    Document.cpp \
-    Translator.cpp
+    ../app/MainWindow.cpp \
+    ../app/OccView.cpp \
+    ../app/MakeBottle.cpp \
+    ../app/Document.cpp \
+    ../app/Translator.cpp \
+    KunieTest.cpp
 
 HEADERS += \
-    MainWindow.h \
-    OccView.h \
-    Document.h \
-    Translator.h
+    ../app/MainWindow.h \
+    ../app/OccView.h \
+    ../app/Document.h \
+    ../app/Translator.h \
+    KunieTest.h
 
 QMAKE_CXXFLAGS += -isystem $$CASROOT/inc
 
-INCLUDEPATH += $$CASROOT/inc
+INCLUDEPATH += ../app $$CASROOT/inc
 DEPENDPATH = $$INCLUDEPATH
 
 LIBS += -L$$CASROOT/lin64/gcc/libd
@@ -37,4 +41,4 @@ LIBS += -lTKernel -lPTKernel -lTKMath -lTKService -lTKV3d -lTKOpenGl \
         -lTKCDF -lTKBool -lTKBO -lTKFillet -lTKOffset
 
 RESOURCES += \
-    resources.qrc
+    ../app/resources.qrc
