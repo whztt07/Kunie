@@ -15,13 +15,17 @@ SOURCES += \
     OccView.cpp \
     MakeBottle.cpp \
     Document.cpp \
-    Translator.cpp
+    Translator.cpp \
+    CylinderDriver.cpp \
+    Application.cpp
 
 HEADERS += \
     MainWindow.h \
     OccView.h \
     Document.h \
-    Translator.h
+    Translator.h \
+    CylinderDriver.h \
+    Application.h
 
 QMAKE_CXXFLAGS += -isystem $$CASROOT/inc
 
@@ -34,7 +38,7 @@ LIBS += -lTKernel -lPTKernel -lTKMath -lTKService -lTKV3d -lTKOpenGl \
         -lTKBRep -lTKIGES -lTKSTL -lTKVRML -lTKSTEP -lTKSTEPAttr -lTKSTEP209 \
         -lTKSTEPBase -lTKShapeSchema -lTKGeomBase -lTKGeomAlgo -lTKG3d -lTKG2d \
         -lTKXSBase -lTKPShape -lTKShHealing -lTKHLR -lTKTopAlgo -lTKMesh -lTKPrim \
-        -lTKCDF -lTKBool -lTKBO -lTKFillet -lTKOffset
+        -lTKCDF -lTKBool -lTKBO -lTKFillet -lTKOffset -lTKCAF -lTKLCAF
 
 RESOURCES += \
     resources.qrc
