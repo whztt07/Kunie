@@ -21,7 +21,7 @@
 QCursor* OccView::s_rotate = NULL;
 QCursor* OccView::s_zoom = NULL;
 
-OccView::OccView(Handle(AIS_InteractiveContext) context, QWidget* parent):
+OccView::OccView(Handle(AIS_InteractiveContext) context):
     m_context(context),
     m_mode(Default)
 {   
@@ -33,7 +33,7 @@ OccView::OccView(Handle(AIS_InteractiveContext) context, QWidget* parent):
     initCursors();
 
     m_view = m_context->CurrentViewer()->CreateView();
-    m_widget = QWidget::createWindowContainer(this, parent);
+    m_widget = QWidget::createWindowContainer(this);
 
     m_hlr = new QAction("&Hidden line removal", this);
     m_hlr->setCheckable(true);

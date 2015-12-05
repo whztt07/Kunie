@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 
+class Application;
 class Document;
 class QStackedWidget;
 class QActionGroup;
@@ -12,7 +13,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
+    MainWindow(Application* app);
+    ~MainWindow();
 
     void onNew();
     void onClose();
@@ -28,6 +30,7 @@ private:
 
     QStackedWidget* m_stack;
 
+    Application* m_app;
     Document* m_document;
 
     QMenu* m_file;

@@ -1,15 +1,17 @@
 #include "KunieTest.h"
+#include "Application.h"
 #include <QTest>
-#include <QApplication>
 
 #include "MainWindow.h"
 
+KunieTest::KunieTest(Application *app)
+{
+    m_app = app;
+}
+
 void KunieTest::initTestCase()
 {
-    qApp->setAttribute(Qt::AA_NativeWindows);
-    m_win = new MainWindow;
-    m_win->show();
-    QVERIFY( QTest::qWaitForWindowActive(m_win));
+    QVERIFY( QTest::qWaitForWindowActive(m_app->window()));
 }
 
 void KunieTest::myFirstTest()
@@ -21,6 +23,5 @@ void KunieTest::myFirstTest()
 void KunieTest::cleanupTestCase()
 {
     QTest::qWait(5000);
-    m_win->close();
-    delete m_win;
+    m_app->window()->close();
 }

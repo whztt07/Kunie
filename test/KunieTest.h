@@ -3,11 +3,14 @@
 
 #include <QObject>
 
-class MainWindow;
+class Application;
 
 class KunieTest : public QObject
 {
     Q_OBJECT
+
+public:
+    KunieTest(Application* app);
 
 private slots:
     void initTestCase();
@@ -15,7 +18,7 @@ private slots:
     void cleanupTestCase();
 
 private:
-    MainWindow* m_win;
+    Application* m_app;
 };
 
 #endif // KUNIETEST_H

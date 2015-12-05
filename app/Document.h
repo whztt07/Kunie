@@ -6,16 +6,16 @@
 #include <AIS_InteractiveContext.hxx>
 #include <TopoDS_Shape.hxx>
 #include <TopTools_HSequenceOfShape.hxx>
+#include <TDocStd_Document.hxx>
 
+class Application;
 class OccView;
-class QWidget;
 
 class Document : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit Document(const QString& title, QWidget* parent=0);
     QString title();
     OccView* view();
 
@@ -29,9 +29,13 @@ signals:
     void error(const QString& msg);
 
 private:
+    explicit Document(const QString& title, Application* app);
+    ~Document();
+
     void insert(const TopoDS_Shape& shape);
 
     QString m_title;
+    Handle(TDocStd_Document) m_document;
     Handle(V3d_Viewer) m_viewer;
     Handle(AIS_InteractiveContext) m_context;
     OccView* m_view;
@@ -39,6 +43,8 @@ private:
 
     static Quantity_Color s_colors[];
     static int s_maxColor;
+
+    friend class Application;
 };
 
 #endif // DOCUMENT_H

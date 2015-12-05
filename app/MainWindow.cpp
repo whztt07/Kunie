@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include "Application.h"
 #include "OccView.h"
 #include "Document.h"
 #include "OccView.h"
@@ -10,10 +11,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QStackedWidget>
-#include <QApplication>
 
-MainWindow::MainWindow(QWidget *parent):
-    QMainWindow(parent),
+MainWindow::MainWindow(Application *app):
+    m_app(app),
     m_document(NULL)
 {
     setWindowTitle("Kunie");
@@ -58,6 +58,11 @@ MainWindow::MainWindow(QWidget *parent):
     updateActions();
 }
 
+MainWindow::~MainWindow()
+{
+
+}
+
 void MainWindow::onImport()
 {
     QString file = QFileDialog::getOpenFileName(this, "Import", qgetenv("CASROOT") + "/data",
@@ -80,18 +85,8 @@ void MainWindow::onImport()
 void MainWindow::onNew()
 {
     QAction* action = NULL;
-    int i, j = 1;
 
-    // look for a unique new document title
-    foreach(action, m_documents->actions()) {
-        Document* document = action->data().value<Document*>();
-        if (sscanf(document->title().toUtf8().constData(), "Untitled %d", &i)) {
-            if (i >= j)
-                j = i + 1;
-        }
-    }
-
-    m_document = new Document(QString("Untitled %1").arg(j), this);
+    m_document = m_app->newDocument();
     connect(m_document, &Document::error, this, &MainWindow::onError);
 
     // store new document in menu entry data
@@ -115,8 +110,7 @@ void MainWindow::onClose()
     m_documents->removeAction(action);
     m_file->removeAction(action);
     m_stack->removeWidget(m_document->view()->widget());
-    delete m_document->view()->widget();
-    delete m_document;
+    m_app->closeDocument(m_document);
     m_document = NULL;
 
     // look for the new current document

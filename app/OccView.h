@@ -11,7 +11,7 @@ class QAction;
 class OccView : public QOpenGLWindow
 {
 public:
-    OccView(Handle(AIS_InteractiveContext) context, QWidget* parent=0);
+    OccView(Handle(AIS_InteractiveContext) context);
     ~OccView();
 
     QWidget* widget();

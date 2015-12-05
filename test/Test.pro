@@ -18,6 +18,8 @@ SOURCES += \
     ../app/MakeBottle.cpp \
     ../app/Document.cpp \
     ../app/Translator.cpp \
+    ../app/CylinderDriver.cpp \
+    ../app/Application.cpp \
     KunieTest.cpp
 
 HEADERS += \
@@ -25,6 +27,8 @@ HEADERS += \
     ../app/OccView.h \
     ../app/Document.h \
     ../app/Translator.h \
+    ../app/CylinderDriver.h \
+    ../app/Application.h \
     KunieTest.h
 
 QMAKE_CXXFLAGS += -isystem $$CASROOT/inc
@@ -38,7 +42,7 @@ LIBS += -lTKernel -lPTKernel -lTKMath -lTKService -lTKV3d -lTKOpenGl \
         -lTKBRep -lTKIGES -lTKSTL -lTKVRML -lTKSTEP -lTKSTEPAttr -lTKSTEP209 \
         -lTKSTEPBase -lTKShapeSchema -lTKGeomBase -lTKGeomAlgo -lTKG3d -lTKG2d \
         -lTKXSBase -lTKPShape -lTKShHealing -lTKHLR -lTKTopAlgo -lTKMesh -lTKPrim \
-        -lTKCDF -lTKBool -lTKBO -lTKFillet -lTKOffset
+        -lTKCDF -lTKBool -lTKBO -lTKFillet -lTKOffset -lTKCAF -lTKLCAF
 
 RESOURCES += \
     ../app/resources.qrc

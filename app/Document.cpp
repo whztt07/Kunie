@@ -14,6 +14,7 @@
 #undef Expose
 #undef Status
 
+#include "Application.h"
 #include "Document.h"
 #include "OccView.h"
 #include "Translator.h"
@@ -54,8 +55,8 @@ int Document::s_maxColor = sizeof(Document::s_colors) / sizeof(Quantity_Color);
 
 static Handle(Graphic3d_GraphicDriver) graphicDriver;
 
-Document::Document(const QString& title, QWidget* parent):
-    QObject(parent),
+Document::Document(const QString& title, Application *app):
+    QObject(app),
     m_title(title),
     m_colorNum(0)
 {
@@ -72,6 +73,11 @@ Document::Document(const QString& title, QWidget* parent):
     m_context->SetDisplayMode(AIS_Shaded);
 
     m_view = new OccView(m_context);
+}
+
+Document::~Document()
+{
+    delete m_view->widget();
 }
 
 QString Document::title()
