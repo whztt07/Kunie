@@ -96,6 +96,11 @@ OccView* Document::view()
     return m_view;
 }
 
+Handle(TDocStd_Document) Document::ocafDoc()
+{
+    return m_document;
+}
+
 void Document::display(const TopoDS_Shape& shape)
 {
     insert(shape);

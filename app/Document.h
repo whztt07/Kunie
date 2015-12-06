@@ -19,6 +19,8 @@ public:
     QString title();
     OccView* view();
 
+    Handle(TDocStd_Document) ocafDoc();
+
     void display(const TopoDS_Shape& shape);
     void display(const Handle(TopTools_HSequenceOfShape)& shapes);
 

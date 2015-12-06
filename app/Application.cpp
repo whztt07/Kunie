@@ -40,8 +40,10 @@ Document* Application::newDocument()
 
 void Application::closeDocument(Document *doc)
 {
-    if(m_documents.removeOne(doc))
+    if(m_documents.removeOne(doc)) {
+        m_app->Close(doc->ocafDoc());
         delete doc;
+    }
 }
 
 Handle(AppStd_Application) Application::ocafApp()
