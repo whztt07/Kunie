@@ -16,9 +16,6 @@ class Document : public QObject
     Q_OBJECT
 
 public:
-    explicit Document(const QString& title, Application* app);
-    ~Document();
-
     QString title();
     OccView* view();
 
@@ -36,8 +33,11 @@ signals:
     void error(const QString& msg);
 
 private:
-    Handle(AIS_InteractiveContext) context();
+    explicit Document(const QString& title, Application* app);
+    ~Document();
 
+
+    Handle(AIS_InteractiveContext) context();
     void insert(const TopoDS_Shape& shape);
 
     QString m_title;
@@ -47,6 +47,8 @@ private:
 
     static Quantity_Color s_colors[];
     static int s_maxColor;
+
+    friend class Application;
 };
 
 #endif // DOCUMENT_H
