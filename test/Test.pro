@@ -20,6 +20,7 @@ SOURCES += \
     ../app/Translator.cpp \
     ../app/CylinderDriver.cpp \
     ../app/Application.cpp \
+    ../app/CylinderCommand.cpp \
     KunieTest.cpp
 
 HEADERS += \
@@ -29,6 +30,7 @@ HEADERS += \
     ../app/Translator.h \
     ../app/CylinderDriver.h \
     ../app/Application.h \
+    ../app/CylinderCommand.h \
     KunieTest.h
 
 QMAKE_CXXFLAGS += -isystem $$CASROOT/inc

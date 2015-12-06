@@ -22,7 +22,8 @@ public:
     void display(const TopoDS_Shape& shape);
     void display(const Handle(TopTools_HSequenceOfShape)& shapes);
 
-    void makeBottle();
+    void createBottle();
+    void createCylinder(double x, double y, double z, double r, double h);
     void import(const QString& file);
 
 signals:

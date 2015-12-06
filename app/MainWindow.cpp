@@ -139,7 +139,7 @@ void MainWindow::onDocument()
 void MainWindow::onMakeBottle()
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    m_document->makeBottle();
+    m_document->createCylinder(0, 0, 0, 10, 50);
     QApplication::restoreOverrideCursor();
 }
 

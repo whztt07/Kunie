@@ -18,9 +18,13 @@
 #include "Document.h"
 #include "OccView.h"
 #include "Translator.h"
+#include "CylinderCommand.h"
 
 #include <TopoDS_Shape.hxx>
 #include <AIS_Shape.hxx>
+#include <TPrsStd_AISViewer.hxx>
+#include <TPrsStd_AISPresentation.hxx>
+#include <TNaming_NamedShape.hxx>
 
 TopoDS_Shape MakeBottle(const Standard_Real myWidth, const Standard_Real myHeight, const Standard_Real myThickness);
 
@@ -69,7 +73,9 @@ Document::Document(const QString& title, Application *app):
     m_viewer->SetDefaultLights();
     m_viewer->SetLightOn();
 
-    m_context = new AIS_InteractiveContext(m_viewer);
+    app->ocafApp()->NewDocument("MDTV-Standard", m_document);
+    TPrsStd_AISViewer::New(m_document->Main(), m_viewer);
+    TPrsStd_AISViewer::Find(m_document->Main(), m_context);
     m_context->SetDisplayMode(AIS_Shaded);
 
     m_view = new OccView(m_context);
@@ -106,10 +112,23 @@ void Document::display(const Handle(TopTools_HSequenceOfShape)& shapes)
     m_context->UpdateCurrentViewer();
 }
 
-void Document::makeBottle()
+void Document::createBottle()
 {
     TopoDS_Shape bottle = MakeBottle(50, 70, 30);
     display(bottle);
+}
+
+void Document::createCylinder(double x, double y, double z, double r, double h)
+{
+    m_document->NewCommand();
+    CylinderCommand cmd(m_document->Main());
+    TDF_Label label = cmd.createCylinder(x, y, z, r, h, "Cylindre");
+    Handle(TPrsStd_AISPresentation) prs = TPrsStd_AISPresentation::Set(label, TNaming_NamedShape::GetID());
+    prs->SetMaterial(Graphic3d_NOM_BRASS);
+    prs->SetColor(Quantity_NOC_MATRABLUE);
+    prs->Display(1);
+    m_context->UpdateCurrentViewer();
+    m_document->CommitCommand();
 }
 
 void Document::import(const QString& file)
