@@ -12,9 +12,6 @@ class QAction;
 class OccView : public QOpenGLWindow
 {
 public:
-    OccView(Document* document);
-    ~OccView();
-
     QWidget* widget();
     static Document* document(QWidget* widget);
 
@@ -36,6 +33,9 @@ protected:
     void mouseReleaseEvent(QMouseEvent* ev);
 
 private:
+    OccView(Document* document);
+    ~OccView();
+
     enum Mode {
         Default,
         Rotation,
@@ -59,6 +59,8 @@ private:
     static QCursor* s_rotate;
     static QCursor* s_zoom;
     static QMap<QWidget*, Document*> m_map;
+
+    friend class Document;
 };
 
 #endif // OCCVIEW_H
