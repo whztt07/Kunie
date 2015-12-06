@@ -10,7 +10,7 @@
 #include <QActionGroup>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QStackedWidget>
+#include <QTabWidget>
 
 MainWindow::MainWindow(Application *app):
     m_app(app),
@@ -18,9 +18,13 @@ MainWindow::MainWindow(Application *app):
 {
     setWindowTitle("Kunie");
     resize(1024, 768);
-    m_stack = new QStackedWidget(this);
-    m_stack->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
-    setCentralWidget(m_stack);
+    m_pages = new QTabWidget(this);
+    m_pages->setDocumentMode(true);
+    m_pages->setTabsClosable(true);
+    m_pages->setMovable(true);
+    m_pages->setTabBarAutoHide(true);
+    m_pages->setTabPosition(QTabWidget::South);
+    setCentralWidget(m_pages);
 
     m_file = menuBar()->addMenu("&File");
 
@@ -97,9 +101,9 @@ void MainWindow::onNew()
     action->setData(QVariant::fromValue<Document*>(m_document));
     connect(action, &QAction::triggered, this, &MainWindow::onDocument);
 
-    setWindowTitle(m_document->title());
-    m_stack->addWidget(m_document->view()->widget());
-    m_stack->setCurrentWidget(m_document->view()->widget());
+    int index = m_pages->addTab(m_document->view()->widget(), m_document->title());
+    m_pages->setTabToolTip(index, m_document->title());
+    m_pages->setCurrentWidget(m_document->view()->widget());
 
     updateActions();
 }
@@ -109,14 +113,14 @@ void MainWindow::onClose()
     QAction* action = m_documents->checkedAction();
     m_documents->removeAction(action);
     m_file->removeAction(action);
-    m_stack->removeWidget(m_document->view()->widget());
+    m_pages->removeTab(m_pages->currentIndex());
     m_app->closeDocument(m_document);
     m_document = NULL;
 
     // look for the new current document
     foreach (action, m_documents->actions()) {
         m_document = action->data().value<Document*>();
-        if (m_document->view()->widget() == m_stack->currentWidget()) {
+        if (m_document->view()->widget() == m_pages->currentWidget()) {
             action->setChecked(true);
             break;
         }
@@ -132,7 +136,7 @@ void MainWindow::onDocument()
 {
     m_document = qobject_cast<QAction*>(sender())->data().value<Document*>();
     setWindowTitle(m_document->title());
-    m_stack->setCurrentWidget(m_document->view()->widget());
+    m_pages->setCurrentWidget(m_document->view()->widget());
     updateActions();
 }
 

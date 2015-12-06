@@ -5,7 +5,7 @@
 
 class Application;
 class Document;
-class QStackedWidget;
+class QTabWidget;
 class QActionGroup;
 
 class MainWindow : public QMainWindow
@@ -28,7 +28,7 @@ public:
 private:
     void updateActions();
 
-    QStackedWidget* m_stack;
+    QTabWidget* m_tab;
 
     Application* m_app;
     Document* m_document;
