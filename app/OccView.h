@@ -3,18 +3,20 @@
 
 #include <QOpenGLWindow>
 #include <QPoint>
-#include <AIS_InteractiveContext.hxx>
+#include <QMap>
 #include <V3d_View.hxx>
 
+class Document;
 class QAction;
 
 class OccView : public QOpenGLWindow
 {
 public:
-    OccView(Handle(AIS_InteractiveContext) context);
+    OccView(Document* document);
     ~OccView();
 
     QWidget* widget();
+    static Document* document(QWidget* widget);
 
     void fitAll();
     void setHLR(bool enabled);
@@ -42,8 +44,8 @@ private:
 
     static void initCursors();
 
+    Document* m_document;
     QWidget* m_widget;
-    Handle(AIS_InteractiveContext) m_context;
     Handle(V3d_View) m_view;
     Mode m_mode;
     QPoint m_precPos;
@@ -56,6 +58,7 @@ private:
 
     static QCursor* s_rotate;
     static QCursor* s_zoom;
+    static QMap<QWidget*, Document*> m_map;
 };
 
 #endif // OCCVIEW_H

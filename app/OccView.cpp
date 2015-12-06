@@ -1,4 +1,5 @@
 #include "OccView.h"
+#include "Document.h"
 #include <QWheelEvent>
 #include <QDebug>
 #include <QCursor>
@@ -20,9 +21,10 @@
 
 QCursor* OccView::s_rotate = NULL;
 QCursor* OccView::s_zoom = NULL;
+QMap<QWidget*, Document*> OccView::m_map;
 
-OccView::OccView(Handle(AIS_InteractiveContext) context):
-    m_context(context),
+OccView::OccView(Document* document):
+    m_document(document),
     m_mode(Default)
 {   
     QSurfaceFormat format;
@@ -32,7 +34,7 @@ OccView::OccView(Handle(AIS_InteractiveContext) context):
 
     initCursors();
 
-    m_view = m_context->CurrentViewer()->CreateView();
+    m_view = m_document->viewer()->CreateView();
     m_widget = QWidget::createWindowContainer(this);
 
     m_hlr = new QAction("&Hidden line removal", this);
@@ -63,10 +65,13 @@ OccView::OccView(Handle(AIS_InteractiveContext) context):
     m_antialiasing->setChecked(m_view->ChangeRenderingParams().IsAntialiasingEnabled);
     connect(m_antialiasing, &QAction::toggled, this, &OccView::setAntialiasing);
     m_widget->addAction(m_antialiasing);
+
+    m_map.insert(m_widget, m_document);
 }
 
 OccView::~OccView()
 {
+    m_map.remove(m_widget);
 }
 
 void OccView::fitAll()
@@ -108,6 +113,11 @@ void OccView::setAntialiasing(bool enabled)
 QWidget *OccView::widget()
 {
     return m_widget;
+}
+
+Document *OccView::document(QWidget *widget)
+{
+    return m_map.value(widget);
 }
 
 void OccView::wheelEvent(QWheelEvent* ev)
@@ -174,7 +184,7 @@ void OccView::initializeGL()
 #elif defined(Q_OS_OSX)
     Handle(Cocoa_Window) wind = new Cocoa_Window((NSView*)handle);
 #elif defined(Q_OS_LINUX)
-    Handle(Xw_Window) wind = new Xw_Window(m_context->CurrentViewer()->Driver()->GetDisplayConnection(), handle);
+    Handle(Xw_Window) wind = new Xw_Window(m_document->viewer()->Driver()->GetDisplayConnection(), handle);
 #endif
 
     m_view->SetWindow(wind);

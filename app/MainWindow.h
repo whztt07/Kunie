@@ -16,28 +16,30 @@ public:
     MainWindow(Application* app);
     ~MainWindow();
 
-    void onNew();
-    void onClose();
-    void onImport();
-    void onDocument();
-    void onMakeBottle();
+    Document* currentDocument();
 
-    void onFitAll();
-    void onError(const QString& msg);
+    void newDocument();
+    void close();
+    void import();
+    void createBottle();
+
+    void fitAll();
 
 private:
+    void onCloseRequested(int index);
+    void onCurrentChanged();
+
+    void onError(const QString& msg);
+
     void updateActions();
 
-    QTabWidget* m_tab;
+    QTabWidget* m_pages;
 
     Application* m_app;
-    Document* m_document;
 
     QMenu* m_file;
     QAction* m_close;
     QAction* m_import;
-    QAction* m_separator;
-    QActionGroup* m_documents;
 
     QMenu* m_view;
 

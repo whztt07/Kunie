@@ -13,8 +13,7 @@
 #include <QTabWidget>
 
 MainWindow::MainWindow(Application *app):
-    m_app(app),
-    m_document(NULL)
+    m_app(app)
 {
     setWindowTitle("Kunie");
     resize(1024, 768);
@@ -24,40 +23,37 @@ MainWindow::MainWindow(Application *app):
     m_pages->setMovable(true);
     m_pages->setTabBarAutoHide(true);
     m_pages->setTabPosition(QTabWidget::South);
+    connect(m_pages, &QTabWidget::tabCloseRequested, this, &MainWindow::onCloseRequested);
+    connect(m_pages, &QTabWidget::currentChanged, this, &MainWindow::onCurrentChanged);
     setCentralWidget(m_pages);
 
     m_file = menuBar()->addMenu("&File");
 
     QAction* newDoc = m_file->addAction("&New");
     newDoc->setShortcuts(QKeySequence::New);
-    connect(newDoc, &QAction::triggered, this, &MainWindow::onNew);
+    connect(newDoc, &QAction::triggered, this, &MainWindow::newDocument);
 
     m_close = m_file->addAction("&Close");
     m_close->setShortcuts(QKeySequence::Close);
-    connect(m_close, &QAction::triggered, this, &MainWindow::onClose);
+    connect(m_close, &QAction::triggered, this, &MainWindow::close);
 
     m_import = m_file->addAction("&Import");
-    connect(m_import, &QAction::triggered, this, &MainWindow::onImport);
+    connect(m_import, &QAction::triggered, this, &MainWindow::import);
 
     QAction* exitAct = m_file->addAction(tr("E&xit"));
     exitAct->setShortcuts(QKeySequence::Quit);
     connect(exitAct, &QAction::triggered, this, &MainWindow::close);
-
-    m_separator = m_file->addSeparator();
-    m_separator->setText("Documents");
-    m_documents = new QActionGroup(this);
-    m_documents->setExclusive(true);
 
     m_view = menuBar()->addMenu("&View");
     m_view->setEnabled(false);
 
     m_modeling = addToolBar("Modeling");
     m_makeBottle = m_modeling->addAction(QPixmap(":/icons/Bottle.png"), "&Make bottle");
-    connect(m_makeBottle, &QAction::triggered, this, &MainWindow::onMakeBottle);
+    connect(m_makeBottle, &QAction::triggered, this, &MainWindow::createBottle);
 
     m_visualization = addToolBar("Visualization");
     m_fitAll = m_visualization->addAction(QPixmap(":/icons/FitAll.png"), "Fit &All");
-    connect(m_fitAll, &QAction::triggered, this, &MainWindow::onFitAll);
+    connect(m_fitAll, &QAction::triggered, this, &MainWindow::fitAll);
 
     updateActions();
 }
@@ -67,7 +63,12 @@ MainWindow::~MainWindow()
 
 }
 
-void MainWindow::onImport()
+Document *MainWindow::currentDocument()
+{
+    return OccView::document(m_pages->currentWidget());
+}
+
+void MainWindow::import()
 {
     QString file = QFileDialog::getOpenFileName(this, "Import", qgetenv("CASROOT") + "/data",
                                                 "All (*);;"
@@ -81,75 +82,52 @@ void MainWindow::onImport()
 
     if(!file.isEmpty()) {
         QApplication::setOverrideCursor(Qt::WaitCursor);
-        m_document->import(file);
+        currentDocument()->import(file);
         QApplication::restoreOverrideCursor();
     }
 }
 
-void MainWindow::onNew()
+void MainWindow::newDocument()
 {
-    QAction* action = NULL;
+    Document* document = m_app->newDocument();
+    connect(document, &Document::error, this, &MainWindow::onError);
 
-    m_document = m_app->newDocument();
-    connect(m_document, &Document::error, this, &MainWindow::onError);
-
-    // store new document in menu entry data
-    action = m_file->addAction(m_document->title());
-    m_documents->addAction(action);
-    action->setCheckable(true);
-    action->setChecked(true);
-    action->setData(QVariant::fromValue<Document*>(m_document));
-    connect(action, &QAction::triggered, this, &MainWindow::onDocument);
-
-    int index = m_pages->addTab(m_document->view()->widget(), m_document->title());
-    m_pages->setTabToolTip(index, m_document->title());
-    m_pages->setCurrentWidget(m_document->view()->widget());
+    int index = m_pages->addTab(document->view()->widget(), document->title());
+    m_pages->setTabToolTip(index, document->title());
+    m_pages->setCurrentWidget(document->view()->widget());
 
     updateActions();
 }
 
-void MainWindow::onClose()
+void MainWindow::close()
 {
-    QAction* action = m_documents->checkedAction();
-    m_documents->removeAction(action);
-    m_file->removeAction(action);
+    Document* document = currentDocument();
     m_pages->removeTab(m_pages->currentIndex());
-    m_app->closeDocument(m_document);
-    m_document = NULL;
-
-    // look for the new current document
-    foreach (action, m_documents->actions()) {
-        m_document = action->data().value<Document*>();
-        if (m_document->view()->widget() == m_pages->currentWidget()) {
-            action->setChecked(true);
-            break;
-        }
-    }
-
-    QString title = (m_document) ? m_document->title() : "Kunie";
-    setWindowTitle(title);
-
-    updateActions();
+    m_app->closeDocument(document);
 }
 
-void MainWindow::onDocument()
+void MainWindow::onCloseRequested(int index)
 {
-    m_document = qobject_cast<QAction*>(sender())->data().value<Document*>();
-    setWindowTitle(m_document->title());
-    m_pages->setCurrentWidget(m_document->view()->widget());
+    Document* document = OccView::document(m_pages->widget(index));
+    m_app->closeDocument(document);
     updateActions();
 }
 
-void MainWindow::onMakeBottle()
+void MainWindow::onCurrentChanged()
+{    
+    updateActions();
+}
+
+void MainWindow::createBottle()
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    m_document->createCylinder(0, 0, 0, 10, 50);
+    currentDocument()->createCylinder(0, 0, 0, 10, 50);
     QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::onFitAll()
+void MainWindow::fitAll()
 {
-    m_document->view()->fitAll();
+    currentDocument()->view()->fitAll();
 }
 
 void MainWindow::onError(const QString &msg)
@@ -160,8 +138,7 @@ void MainWindow::onError(const QString &msg)
 
 void MainWindow::updateActions()
 {
-    bool enabled = m_document != NULL;
-    m_separator->setVisible(enabled);
+    bool enabled = currentDocument() != NULL;
     m_close->setEnabled(enabled);
     m_import->setEnabled(enabled);
     m_makeBottle->setEnabled(enabled);
@@ -170,6 +147,10 @@ void MainWindow::updateActions()
     m_view->clear();
     m_view->setEnabled(enabled);
 
-    if(m_document)
-        m_view->addActions(m_document->view()->widget()->actions());
+    if(m_pages->currentWidget()) {
+        m_view->addActions(m_pages->currentWidget()->actions());
+        setWindowTitle(currentDocument()->title());
+    } else {
+        setWindowTitle("Kunie");
+    }
 }

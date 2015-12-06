@@ -69,16 +69,15 @@ Document::Document(const QString& title, Application *app):
         graphicDriver = new OpenGl_GraphicDriver(display);
     }
 
-    m_viewer = new V3d_Viewer(graphicDriver, (short* const)"viewer");
-    m_viewer->SetDefaultLights();
-    m_viewer->SetLightOn();
+    Handle(V3d_Viewer) viewer = new V3d_Viewer(graphicDriver, (short* const)"viewer");
+    viewer->SetDefaultLights();
+    viewer->SetLightOn();
 
     app->ocafApp()->NewDocument("MDTV-Standard", m_document);
-    TPrsStd_AISViewer::New(m_document->Main(), m_viewer);
-    TPrsStd_AISViewer::Find(m_document->Main(), m_context);
-    m_context->SetDisplayMode(AIS_Shaded);
+    TPrsStd_AISViewer::New(m_document->Main(), viewer);
+    context()->SetDisplayMode(AIS_Shaded);
 
-    m_view = new OccView(m_context);
+    m_view = new OccView(this);
 }
 
 Document::~Document()
@@ -96,6 +95,18 @@ OccView* Document::view()
     return m_view;
 }
 
+Handle(V3d_Viewer) Document::viewer()
+{
+    return context()->CurrentViewer();
+}
+
+Handle(AIS_InteractiveContext) Document::context()
+{
+    Handle(AIS_InteractiveContext) context;
+    TPrsStd_AISViewer::Find(m_document->Main(), context);
+    return context;
+}
+
 Handle(TDocStd_Document) Document::ocafDoc()
 {
     return m_document;
@@ -104,7 +115,7 @@ Handle(TDocStd_Document) Document::ocafDoc()
 void Document::display(const TopoDS_Shape& shape)
 {
     insert(shape);
-    m_context->UpdateCurrentViewer();
+    context()->UpdateCurrentViewer();
 }
 
 void Document::display(const Handle(TopTools_HSequenceOfShape)& shapes)
@@ -114,7 +125,7 @@ void Document::display(const Handle(TopTools_HSequenceOfShape)& shapes)
     for(int i=1; i<=shapes->Length(); i++)
         insert(shapes->Value(i));
 
-    m_context->UpdateCurrentViewer();
+    context()->UpdateCurrentViewer();
 }
 
 void Document::createBottle()
@@ -132,7 +143,7 @@ void Document::createCylinder(double x, double y, double z, double r, double h)
     prs->SetMaterial(Graphic3d_NOM_BRASS);
     prs->SetColor(Quantity_NOC_MATRABLUE);
     prs->Display(1);
-    m_context->UpdateCurrentViewer();
+    context()->UpdateCurrentViewer();
     m_document->CommitCommand();
 }
 
@@ -168,8 +179,8 @@ void Document::import(const QString& file)
 void Document::insert(const TopoDS_Shape& shape)
 {
     Handle(AIS_Shape) ais = new AIS_Shape(shape);
-    m_context->Display(ais, false);
-    m_context->SetMaterial(ais, Graphic3d_NOM_BRASS);
-    m_context->SetColor(ais, s_colors[m_colorNum++]);
+    context()->Display(ais, false);
+    context()->SetMaterial(ais, Graphic3d_NOM_BRASS);
+    context()->SetColor(ais, s_colors[m_colorNum++]);
     m_colorNum %= s_maxColor;
 }
