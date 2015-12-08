@@ -47,7 +47,6 @@ private:
     QAction* m_makeBottle;
 
     QToolBar* m_visualization;
-    QAction* m_fitAll;
 };
 
 #endif // MAINWINDOW_H

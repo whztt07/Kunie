@@ -8,19 +8,32 @@
 
 class Document;
 class QAction;
+class QActionGroup;
 
 class OccView : public QOpenGLWindow
 {
 public:
-    QWidget* widget();
     static Document* document(QWidget* widget);
+    QWidget* widget();
+
+    QActionGroup* viewActions();
 
     void fitAll();
+    void axo();
+    void front();
+    void back();
+    void top();
+    void bottom();
+    void left();
+    void right();
+
+    QActionGroup* renderActions();
+
     void setHLR(bool enabled);
     void setRayTracing(bool enabled);
     void setShadow(bool enabled);
     void setReflection(bool enabled);
-    void setAntialiasing(bool enabled);
+    void setAntialiasing(bool enabled);    
 
 protected:
     void initializeGL();
@@ -42,6 +55,8 @@ private:
         Panning
     };
 
+    void initViewActions();
+    void initRenderActions();
     static void initCursors();
 
     Document* m_document;
@@ -50,11 +65,8 @@ private:
     Mode m_mode;
     QPoint m_precPos;
 
-    QAction* m_hlr;
-    QAction* m_rayTracing;
-    QAction* m_shadow;
-    QAction* m_reflection;
-    QAction* m_antialiasing;
+    QActionGroup* m_renderActions;
+    QActionGroup* m_viewActions;
 
     static QCursor* s_rotate;
     static QCursor* s_zoom;

@@ -52,8 +52,6 @@ MainWindow::MainWindow(Application *app):
     connect(m_makeBottle, &QAction::triggered, this, &MainWindow::createBottle);
 
     m_visualization = addToolBar("Visualization");
-    m_fitAll = m_visualization->addAction(QPixmap(":/icons/FitAll.png"), "Fit &All");
-    connect(m_fitAll, &QAction::triggered, this, &MainWindow::fitAll);
 
     updateActions();
 }
@@ -142,13 +140,16 @@ void MainWindow::updateActions()
     m_close->setEnabled(enabled);
     m_import->setEnabled(enabled);
     m_makeBottle->setEnabled(enabled);
-    m_fitAll->setEnabled(enabled);
 
     m_view->clear();
     m_view->setEnabled(enabled);
 
+    m_visualization->clear();
+    m_visualization->setVisible(enabled);
+
     if(m_pages->currentWidget()) {
-        m_view->addActions(m_pages->currentWidget()->actions());
+        m_view->addActions(currentDocument()->view()->renderActions()->actions());
+        m_visualization->addActions(currentDocument()->view()->viewActions()->actions());
         setWindowTitle(currentDocument()->title());
     } else {
         setWindowTitle("Kunie");

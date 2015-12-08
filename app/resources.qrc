@@ -4,5 +4,12 @@
         <file>icons/FitAll.png</file>
         <file>icons/Zoom.png</file>
         <file>icons/Rotate.png</file>
+        <file>icons/Axo.png</file>
+        <file>icons/Back.png</file>
+        <file>icons/Bottom.png</file>
+        <file>icons/Front.png</file>
+        <file>icons/Left.png</file>
+        <file>icons/Right.png</file>
+        <file>icons/Top.png</file>
     </qresource>
 </RCC>
