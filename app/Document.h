@@ -10,6 +10,7 @@
 
 class Application;
 class OccView;
+class QActionGroup;
 
 class Document : public QObject
 {
@@ -22,11 +23,13 @@ public:
     Handle(TDocStd_Document) ocafDoc();
     Handle(V3d_Viewer) viewer();
 
+    QActionGroup* modelingActions();
+
     void display(const TopoDS_Shape& shape);
     void display(const Handle(TopTools_HSequenceOfShape)& shapes);
 
     void createBottle();
-    void createCylinder(double x, double y, double z, double r, double h);
+    void createCylinder();
     void import(const QString& file);
 
 signals:
@@ -36,14 +39,16 @@ private:
     explicit Document(const QString& title, Application* app);
     ~Document();
 
-
     Handle(AIS_InteractiveContext) context();
     void insert(const TopoDS_Shape& shape);
+    void initActions();
 
     QString m_title;
     Handle(TDocStd_Document) m_document;
     OccView* m_view;
     int m_colorNum;
+
+    QActionGroup* m_actions;
 
     static Quantity_Color s_colors[];
     static int s_maxColor;

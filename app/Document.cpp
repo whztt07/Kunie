@@ -20,6 +20,7 @@
 #include "Translator.h"
 #include "CylinderCommand.h"
 
+#include <QActionGroup>
 #include <TopoDS_Shape.hxx>
 #include <AIS_Shape.hxx>
 #include <TPrsStd_AISViewer.hxx>
@@ -78,6 +79,8 @@ Document::Document(const QString& title, Application *app):
     context()->SetDisplayMode(AIS_Shaded);
 
     m_view = new OccView(this);
+
+    initActions();
 }
 
 Document::~Document()
@@ -93,6 +96,11 @@ QString Document::title()
 OccView* Document::view()
 {
     return m_view;
+}
+
+QActionGroup *Document::modelingActions()
+{
+    return m_actions;
 }
 
 Handle(V3d_Viewer) Document::viewer()
@@ -130,15 +138,17 @@ void Document::display(const Handle(TopTools_HSequenceOfShape)& shapes)
 
 void Document::createBottle()
 {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
     TopoDS_Shape bottle = MakeBottle(50, 70, 30);
     display(bottle);
+    QApplication::restoreOverrideCursor();
 }
 
-void Document::createCylinder(double x, double y, double z, double r, double h)
+void Document::createCylinder()
 {
     m_document->NewCommand();
     CylinderCommand cmd(m_document->Main());
-    TDF_Label label = cmd.createCylinder(x, y, z, r, h, "Cylindre");
+    TDF_Label label = cmd.createCylinder(0, 0, 0, 10, 50, "Cylindre");
     Handle(TPrsStd_AISPresentation) prs = TPrsStd_AISPresentation::Set(label, TNaming_NamedShape::GetID());
     prs->SetMaterial(Graphic3d_NOM_BRASS);
     prs->SetColor(Quantity_NOC_MATRABLUE);
@@ -183,4 +193,15 @@ void Document::insert(const TopoDS_Shape& shape)
     context()->SetMaterial(ais, Graphic3d_NOM_BRASS);
     context()->SetColor(ais, s_colors[m_colorNum++]);
     m_colorNum %= s_maxColor;
+}
+
+void Document::initActions()
+{
+    m_actions = new QActionGroup(this);
+
+    QAction* createBottle = new QAction(QPixmap(":/icons/Bottle.png"), "&Make bottle", m_actions);
+    connect(createBottle, &QAction::triggered, this, &Document::createBottle);
+
+    QAction* createCylinder = new QAction(QPixmap(":/icons/Cylinder.png"), "&Make bottle", m_actions);
+    connect(createCylinder, &QAction::triggered, this, &Document::createCylinder);
 }

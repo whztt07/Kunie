@@ -14,6 +14,7 @@ Application::Application(int &argc, char **argv):
 
     m_window = new MainWindow(this);
     m_window->show();
+    m_window->newDocument();
 }
 
 MainWindow *Application::window()

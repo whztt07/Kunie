@@ -11,5 +11,11 @@
         <file>icons/Left.png</file>
         <file>icons/Right.png</file>
         <file>icons/Top.png</file>
+        <file>icons/Box.png</file>
+        <file>icons/Cone.png</file>
+        <file>icons/Cylinder.png</file>
+        <file>icons/Lamp.png</file>
+        <file>icons/Sphere.png</file>
+        <file>icons/Torus.png</file>
     </qresource>
 </RCC>

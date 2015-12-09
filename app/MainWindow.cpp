@@ -45,12 +45,7 @@ MainWindow::MainWindow(Application *app):
     connect(exitAct, &QAction::triggered, this, &MainWindow::close);
 
     m_view = menuBar()->addMenu("&View");
-    m_view->setEnabled(false);
-
     m_modeling = addToolBar("Modeling");
-    m_makeBottle = m_modeling->addAction(QPixmap(":/icons/Bottle.png"), "&Make bottle");
-    connect(m_makeBottle, &QAction::triggered, this, &MainWindow::createBottle);
-
     m_visualization = addToolBar("Visualization");
 
     updateActions();
@@ -116,18 +111,6 @@ void MainWindow::onCurrentChanged()
     updateActions();
 }
 
-void MainWindow::createBottle()
-{
-    QApplication::setOverrideCursor(Qt::WaitCursor);
-    currentDocument()->createCylinder(0, 0, 0, 10, 50);
-    QApplication::restoreOverrideCursor();
-}
-
-void MainWindow::fitAll()
-{
-    currentDocument()->view()->fitAll();
-}
-
 void MainWindow::onError(const QString &msg)
 {
     QApplication::restoreOverrideCursor();
@@ -139,16 +122,19 @@ void MainWindow::updateActions()
     bool enabled = currentDocument() != NULL;
     m_close->setEnabled(enabled);
     m_import->setEnabled(enabled);
-    m_makeBottle->setEnabled(enabled);
 
     m_view->clear();
     m_view->setEnabled(enabled);
+
+    m_modeling->clear();
+    m_modeling->setVisible(enabled);
 
     m_visualization->clear();
     m_visualization->setVisible(enabled);
 
     if(m_pages->currentWidget()) {
         m_view->addActions(currentDocument()->view()->renderActions()->actions());
+        m_modeling->addActions(currentDocument()->modelingActions()->actions());
         m_visualization->addActions(currentDocument()->view()->viewActions()->actions());
         setWindowTitle(currentDocument()->title());
     } else {

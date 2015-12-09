@@ -11,7 +11,7 @@ class MainWindow;
 class Application : public QApplication
 {
 public:
-    Application(int & argc, char ** argv);
+    Application(int& argc, char** argv);
     Handle(AppStd_Application) ocafApp();
     MainWindow* window();
     Document* newDocument();
