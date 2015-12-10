@@ -13,24 +13,28 @@ isEmpty(CASROOT) {
 
 SOURCES += \
     main.cpp \
+    ../app/Application.cpp \
     ../app/MainWindow.cpp \
     ../app/OccView.cpp \
     ../app/MakeBottle.cpp \
     ../app/Document.cpp \
     ../app/Translator.cpp \
     ../app/CylinderDriver.cpp \
-    ../app/Application.cpp \
     ../app/CylinderCommand.cpp \
+    ../app/SphereDriver.cpp \
+    ../app/SphereCommand.cpp \
     KunieTest.cpp
 
 HEADERS += \
+    ../app/Application.h \
     ../app/MainWindow.h \
     ../app/OccView.h \
     ../app/Document.h \
     ../app/Translator.h \
     ../app/CylinderDriver.h \
-    ../app/Application.h \
     ../app/CylinderCommand.h \
+    ../app/SphereDriver.h \
+    ../app/SphereCommand.h \
     KunieTest.h
 
 QMAKE_CXXFLAGS += -isystem $$CASROOT/inc

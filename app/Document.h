@@ -30,6 +30,7 @@ public:
 
     void createBottle();
     void createCylinder();
+    void createSphere();
     void import(const QString& file);
 
 signals:
@@ -42,6 +43,7 @@ private:
     Handle(AIS_InteractiveContext) context();
     void insert(const TopoDS_Shape& shape);
     void initActions();
+    Quantity_NameOfColor nextColor();
 
     QString m_title;
     Handle(TDocStd_Document) m_document;
@@ -50,7 +52,8 @@ private:
 
     QActionGroup* m_actions;
 
-    static Quantity_Color s_colors[];
+    static Graphic3d_NameOfMaterial s_material;
+    static Quantity_NameOfColor s_colors[];
     static int s_maxColor;
 
     friend class Application;

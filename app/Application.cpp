@@ -2,6 +2,7 @@
 #include "Document.h"
 #include "MainWindow.h"
 #include "CylinderDriver.h"
+#include "SphereDriver.h"
 #include <TFunction_DriverTable.hxx>
 
 Application::Application(int &argc, char **argv):
@@ -11,6 +12,7 @@ Application::Application(int &argc, char **argv):
 
     m_app = new AppStd_Application();
     TFunction_DriverTable::Get()->AddDriver(CylinderDriver::GetID(), new CylinderDriver());
+    TFunction_DriverTable::Get()->AddDriver(SphereDriver::GetID(), new SphereDriver());
 
     m_window = new MainWindow(this);
     m_window->show();

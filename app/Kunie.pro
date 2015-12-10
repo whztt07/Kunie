@@ -18,7 +18,9 @@ SOURCES += \
     Translator.cpp \
     CylinderDriver.cpp \
     Application.cpp \
-    CylinderCommand.cpp
+    CylinderCommand.cpp \
+    SphereDriver.cpp \
+    SphereCommand.cpp
 
 HEADERS += \
     MainWindow.h \
@@ -27,7 +29,9 @@ HEADERS += \
     Translator.h \
     CylinderDriver.h \
     Application.h \
-    CylinderCommand.h
+    CylinderCommand.h \
+    SphereDriver.h \
+    SphereCommand.h
 
 QMAKE_CXXFLAGS += -isystem $$CASROOT/inc
 
