@@ -20,6 +20,7 @@
 #include "Translator.h"
 #include "CylinderCommand.h"
 #include "SphereCommand.h"
+#include "CutCommand.h"
 
 #include <QActionGroup>
 #include <TopoDS_Shape.hxx>
@@ -320,17 +321,51 @@ void Document::createSphere()
     QApplication::setOverrideCursor(Qt::WaitCursor);
     m_document->NewCommand();
     SphereCommand cmd(m_document->Main());
-
-    for (int i = 0; i < 20 ; i++) {
-        for (int j = 0; j < 10 ; j++) {
-            TDF_Label label = cmd.createSphere(i, j, 0, 0.5, "Sphere");
-            Handle(TPrsStd_AISPresentation) prs = TPrsStd_AISPresentation::Set(label, TNaming_NamedShape::GetID());
-            prs->SetMaterial(s_material);
-            prs->SetColor(nextColor());
-            prs->Display(1);
-        }
-    }
+    TDF_Label label = cmd.createSphere(0, 0, 0, 0.5, "Sphere");
+    Handle(TPrsStd_AISPresentation) prs = TPrsStd_AISPresentation::Set(label, TNaming_NamedShape::GetID());
+    prs->SetMaterial(s_material);
+    prs->SetColor(nextColor());
+    prs->Display(1);
     context()->UpdateCurrentViewer();
+    m_document->CommitCommand();
+    QApplication::restoreOverrideCursor();
+}
+
+void Document::createCut()
+{
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    m_document->NewCommand();
+    CutCommand cmd(m_document->Main());
+
+    CylinderCommand cylinCmd(m_document->Main());
+    TDF_Label base = cylinCmd.createCylinder(0, 10, -30, 10, 60, "Cylinder");
+    Handle(TPrsStd_AISPresentation) prsBase = TPrsStd_AISPresentation::Set(base, TNaming_NamedShape::GetID());
+    prsBase->SetMaterial(s_material);
+    prsBase->SetColor(nextColor());
+    prsBase->Display(1);
+    m_view->fitAll();
+    Application::wait(500);
+
+    SphereCommand sphereCmd(m_document->Main());
+    TDF_Label tool = sphereCmd.createSphere(0, 0, 0, 5, "Sphere");
+    Handle(TPrsStd_AISPresentation) prsTool = TPrsStd_AISPresentation::Set(tool, TNaming_NamedShape::GetID());
+    prsTool->SetMaterial(s_material);
+    prsTool->SetColor(nextColor());
+    prsTool->Display(1);
+    m_view->fitAll();
+    Application::wait(1000);
+
+    TDF_Label cut = cmd.createCut(base, tool);
+    Handle(TPrsStd_AISPresentation) prsCut = TPrsStd_AISPresentation::Set(cut, TNaming_NamedShape::GetID());
+    prsCut->SetMaterial(s_material);
+    prsCut->SetColor(nextColor());
+
+    // Erase the two boxes and display the cut object
+    prsBase->Erase(0);
+    prsTool->Erase(0);
+    prsCut->Display(1);
+    context()->UpdateCurrentViewer();
+
     m_document->CommitCommand();
     QApplication::restoreOverrideCursor();
 }
@@ -386,6 +421,9 @@ void Document::initActions()
 
     QAction* createSphere = new QAction(QPixmap(":/icons/Sphere.png"), "&Sphere", m_actions);
     connect(createSphere, &QAction::triggered, this, &Document::createSphere);
+
+    QAction* createCut = new QAction(QPixmap(":/icons/Cut.png"), "C&ut", m_actions);
+    connect(createCut, &QAction::triggered, this, &Document::createCut);
 }
 
 Quantity_NameOfColor Document::nextColor()

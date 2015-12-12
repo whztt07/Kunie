@@ -20,7 +20,9 @@ SOURCES += \
     Application.cpp \
     CylinderCommand.cpp \
     SphereDriver.cpp \
-    SphereCommand.cpp
+    SphereCommand.cpp \
+    CutDriver.cpp \
+    CutCommand.cpp
 
 HEADERS += \
     MainWindow.h \
@@ -31,7 +33,9 @@ HEADERS += \
     Application.h \
     CylinderCommand.h \
     SphereDriver.h \
-    SphereCommand.h
+    SphereCommand.h \
+    CutDriver.h \
+    CutCommand.h
 
 QMAKE_CXXFLAGS += -isystem $$CASROOT/inc
 

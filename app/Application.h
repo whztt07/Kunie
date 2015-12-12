@@ -17,6 +17,8 @@ public:
     Document* newDocument();
     void closeDocument(Document* doc);
 
+    void static wait(int ms);
+
 private:
     Handle(AppStd_Application) m_app;
     QList<Document*> m_documents;

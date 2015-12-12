@@ -3,7 +3,9 @@
 #include "MainWindow.h"
 #include "CylinderDriver.h"
 #include "SphereDriver.h"
+#include "CutDriver.h"
 #include <TFunction_DriverTable.hxx>
+#include <QElapsedTimer>
 
 Application::Application(int &argc, char **argv):
     QApplication(argc, argv)
@@ -13,6 +15,7 @@ Application::Application(int &argc, char **argv):
     m_app = new AppStd_Application();
     TFunction_DriverTable::Get()->AddDriver(CylinderDriver::GetID(), new CylinderDriver());
     TFunction_DriverTable::Get()->AddDriver(SphereDriver::GetID(), new SphereDriver());
+    TFunction_DriverTable::Get()->AddDriver(CutDriver::GetID(), new CutDriver());
 
     m_window = new MainWindow(this);
     m_window->show();
@@ -54,3 +57,11 @@ Handle(AppStd_Application) Application::ocafApp()
     return m_app;
 }
 
+void Application::wait(int ms)
+{
+    QElapsedTimer timer;
+    timer.start();
+    do {
+        processEvents(QEventLoop::AllEvents, ms);
+    } while (timer.elapsed() < ms);
+}

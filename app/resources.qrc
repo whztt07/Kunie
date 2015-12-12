@@ -17,5 +17,6 @@
         <file>icons/Lamp.png</file>
         <file>icons/Sphere.png</file>
         <file>icons/Torus.png</file>
+        <file>icons/Cut.png</file>
     </qresource>
 </RCC>

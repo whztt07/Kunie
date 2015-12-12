@@ -31,6 +31,7 @@ public:
     void createBottle();
     void createCylinder();
     void createSphere();
+    void createCut();
     void import(const QString& file);
 
 signals:
