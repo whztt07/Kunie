@@ -34,7 +34,6 @@ OccView::OccView(Document* document):
     setFormat(format);
 
     m_view = m_document->viewer()->CreateView();
-    m_view->SetAntialiasingOn();
 
     m_widget = QWidget::createWindowContainer(this);
     m_map.insert(m_widget, m_document);

@@ -347,7 +347,7 @@ void Document::createCut()
     Application::wait(500);
 
     SphereCommand sphereCmd(m_document->Main());
-    TDF_Label tool = sphereCmd.createSphere(0, 0, 0, 5, "Sphere");
+    TDF_Label tool = sphereCmd.createSphere(0, 0, 0, 15, "Sphere");
     Handle(TPrsStd_AISPresentation) prsTool = TPrsStd_AISPresentation::Set(tool, TNaming_NamedShape::GetID());
     prsTool->SetMaterial(s_material);
     prsTool->SetColor(nextColor());
