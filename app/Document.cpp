@@ -360,7 +360,6 @@ void Document::createCut()
     prsCut->SetMaterial(s_material);
     prsCut->SetColor(nextColor());
 
-    // Erase the two boxes and display the cut object
     prsBase->Erase(0);
     prsTool->Erase(0);
     prsCut->Display(1);

@@ -23,6 +23,8 @@ SOURCES += \
     ../app/CylinderCommand.cpp \
     ../app/SphereDriver.cpp \
     ../app/SphereCommand.cpp \
+    ../app/CutDriver.cpp \
+    ../app/CutCommand.cpp \
     KunieTest.cpp
 
 HEADERS += \
@@ -35,6 +37,8 @@ HEADERS += \
     ../app/CylinderCommand.h \
     ../app/SphereDriver.h \
     ../app/SphereCommand.h \
+    ../app/CutDriver.h \
+    ../app/CutCommand.h \
     KunieTest.h
 
 QMAKE_CXXFLAGS += -isystem $$CASROOT/inc
