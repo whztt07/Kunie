@@ -22,6 +22,7 @@ public:
 
     Handle(TDocStd_Document) ocafDoc();
     Handle(V3d_Viewer) viewer();
+    Handle(AIS_InteractiveContext) context();
 
     QActionGroup* modelingActions();
 
@@ -41,7 +42,6 @@ private:
     explicit Document(const QString& title, Application* app);
     ~Document();
 
-    Handle(AIS_InteractiveContext) context();
     void insert(const TopoDS_Shape& shape);
     void initActions();
     Quantity_NameOfColor nextColor();

@@ -50,7 +50,7 @@ private:
     ~OccView();
 
     enum Mode {
-        Default,
+        Selection,
         Rotation,
         Panning
     };

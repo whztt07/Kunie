@@ -26,7 +26,7 @@ QMap<QWidget*, Document*> OccView::m_map;
 
 OccView::OccView(Document* document):
     m_document(document),
-    m_mode(Default)
+    m_mode(Selection)
 {   
     QSurfaceFormat format;
     format.setDepthBufferSize(16);
@@ -220,13 +220,14 @@ void OccView::mouseMoveEvent(QMouseEvent*)
     if (curPos == m_precPos) return;
 
     switch (m_mode) {
+    case Selection:
+        m_document->context()->MoveTo(curPos.x(), curPos.y(), m_view);
+        break;
     case Rotation:
         m_view->Rotation(curPos.x(), curPos.y());
         break;
     case Panning:
         m_view->Pan(curPos.x() - m_precPos.x(), m_precPos.y() - curPos.y());
-        break;
-    default:
         break;
     }
 
@@ -251,7 +252,11 @@ void OccView::mousePressEvent(QMouseEvent* ev)
 
 void OccView::mouseReleaseEvent(QMouseEvent*)
 {
-    m_mode = Default;
+    if(m_mode == Selection) {
+        m_document->context()->Select();
+    }
+
+    m_mode = Selection;
     m_view->Redraw();
     QApplication::restoreOverrideCursor();
 }
