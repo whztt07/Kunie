@@ -7,6 +7,7 @@
 #include <TopoDS_Shape.hxx>
 #include <TopTools_HSequenceOfShape.hxx>
 #include <TDocStd_Document.hxx>
+#include <TDocStd_Application.hxx>
 
 class Application;
 class OccView;
@@ -21,6 +22,7 @@ public:
     OccView* view();
 
     Handle(TDocStd_Document) ocafDoc();
+    Handle(TDocStd_Application) ocafApp();
     Handle(V3d_Viewer) viewer();
     Handle(AIS_InteractiveContext) context();
 

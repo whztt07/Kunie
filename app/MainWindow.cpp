@@ -25,7 +25,7 @@ MainWindow::MainWindow(Application *app):
     m_pages->setTabBarAutoHide(true);
     m_pages->setTabPosition(QTabWidget::South);
     connect(m_pages, &QTabWidget::tabCloseRequested, this, &MainWindow::onCloseRequested);
-    connect(m_pages, &QTabWidget::currentChanged, this, &MainWindow::onCurrentChanged);
+    connect(m_pages, &QTabWidget::currentChanged, this, &MainWindow::updateActions);
     setCentralWidget(m_pages);
 
     m_file = menuBar()->addMenu("&File");
@@ -134,11 +134,6 @@ void MainWindow::onCloseRequested(int index)
 {
     Document* document = OccView::document(m_pages->widget(index));
     m_app->closeDocument(document);
-    updateActions();
-}
-
-void MainWindow::onCurrentChanged()
-{
     updateActions();
 }
 

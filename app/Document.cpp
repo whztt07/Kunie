@@ -277,6 +277,11 @@ Handle(TDocStd_Document) Document::ocafDoc()
     return m_document;
 }
 
+Handle(TDocStd_Application) Document::ocafApp()
+{
+    return Handle(TDocStd_Application)::DownCast(m_document->Application());
+}
+
 void Document::display(const TopoDS_Shape& shape)
 {
     insert(shape);
@@ -417,10 +422,9 @@ void Document::saveAs(const QString &file)
     }
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    Handle(TDocStd_Application) app = Handle(TDocStd_Application)::DownCast(m_document->Application());
 
     TCollection_ExtendedString statusMsg;
-    PCDM_StoreStatus status = app->SaveAs(m_document, file.toUtf8().data(), statusMsg);
+    PCDM_StoreStatus status = ocafApp()->SaveAs(m_document, file.toUtf8().data(), statusMsg);
 
     if(status != PCDM_SS_OK)
         emit error(QFileInfo(file).fileName() + " not saved.\n" + QString::fromUtf16((const ushort*)statusMsg.ToExtString()));

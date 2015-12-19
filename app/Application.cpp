@@ -4,25 +4,24 @@
 #include "CylinderDriver.h"
 #include "SphereDriver.h"
 #include "CutDriver.h"
+#include <AppStd_Application.hxx>
 #include <TFunction_DriverTable.hxx>
+#include <QMessageBox>
 #include <QElapsedTimer>
-#include <QDebug>
+#include <QDir>
+#include <QFile>
 
 Application::Application(int &argc, char **argv):
     QApplication(argc, argv)
 {
     setAttribute(Qt::AA_NativeWindows);
 
-    //CSF_PluginDefaults;
-    //CSF_StandardDefaults;
+    initEnv();
 
     m_ocafApp = new AppStd_Application();
     TFunction_DriverTable::Get()->AddDriver(CylinderDriver::GetID(), new CylinderDriver());
     TFunction_DriverTable::Get()->AddDriver(SphereDriver::GetID(), new SphereDriver());
     TFunction_DriverTable::Get()->AddDriver(CutDriver::GetID(), new CutDriver());
-
-    qInfo() << m_ocafApp->ResourcesName();
-    qInfo() << m_ocafApp->IsDriverLoaded();
 
     m_window = new MainWindow(this);
     m_window->show();
@@ -59,7 +58,7 @@ void Application::closeDocument(Document *doc)
     }
 }
 
-Handle(AppStd_Application) Application::ocafApp()
+Handle(TDocStd_Application) Application::ocafApp()
 {
     return m_ocafApp;
 }
@@ -71,4 +70,37 @@ void Application::wait(int ms)
     do {
         processEvents(QEventLoop::AllEvents, ms);
     } while (timer.elapsed() < ms);
+}
+
+void Application::initEnv()
+{
+    QByteArray CASROOT = qgetenv("CASROOT");
+    QByteArray StdResource = CASROOT + QDir::separator().toLatin1() + "src" + QDir::separator().toLatin1() + "StdResource";
+    QByteArray CSF_PluginDefaults = qgetenv("CSF_PluginDefaults");
+    QByteArray CSF_StandardDefaults = qgetenv("CSF_StandardDefaults");
+
+    if(CASROOT.isEmpty()) {
+        QMessageBox::critical(NULL, applicationName(), "CASROOT not set");
+        ::exit(EXIT_FAILURE);
+    }
+
+    if(CSF_PluginDefaults.isEmpty()) {
+        CSF_PluginDefaults = StdResource + QDir::separator().toLatin1() + "Plugin";
+        qputenv("CSF_PluginDefaults", StdResource);
+    }
+
+    if(CSF_StandardDefaults.isEmpty()) {
+        CSF_StandardDefaults = StdResource + QDir::separator().toLatin1() + "Standard";
+        qputenv("CSF_StandardDefaults", StdResource);
+    }
+
+    if(!QFile(CSF_PluginDefaults).exists()) {
+        QMessageBox::critical(NULL, applicationName(), CSF_PluginDefaults + " does not exist");
+        ::exit(EXIT_FAILURE);
+    }
+
+    if(!QFile(CSF_StandardDefaults).exists()) {
+        QMessageBox::critical(NULL, applicationName(), CSF_StandardDefaults + " does not exist");
+        ::exit(EXIT_FAILURE);
+    }
 }

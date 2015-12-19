@@ -26,7 +26,6 @@ public:
 
 private:
     void onCloseRequested(int index);
-    void onCurrentChanged();
     void onError(const QString& msg);
     void updateActions();
 

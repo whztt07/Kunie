@@ -3,7 +3,7 @@
 
 #include <QApplication>
 #include <QList>
-#include <AppStd_Application.hxx>
+#include <TDocStd_Application.hxx>
 
 class Document;
 class MainWindow;
@@ -12,7 +12,7 @@ class Application : public QApplication
 {
 public:
     Application(int& argc, char** argv);
-    Handle(AppStd_Application) ocafApp();
+    Handle(TDocStd_Application) ocafApp();
     MainWindow* window();
     Document* newDocument();
     void closeDocument(Document* doc);
@@ -20,7 +20,9 @@ public:
     void static wait(int ms);
 
 private:
-    Handle(AppStd_Application) m_ocafApp;
+    void initEnv();
+
+    Handle(TDocStd_Application) m_ocafApp;
     QList<Document*> m_documents;
     MainWindow* m_window;
 };
