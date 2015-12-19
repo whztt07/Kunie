@@ -18,8 +18,11 @@ public:
 
     Document* currentDocument();
     void newDocument();
-    void close();
+    void open();
     void import();
+    void save();
+    void saveAs();
+    void close();
 
 private:
     void onCloseRequested(int index);
@@ -30,8 +33,10 @@ private:
     QTabWidget* m_pages;
     Application* m_app;
     QMenu* m_file;
-    QAction* m_close;
     QAction* m_import;
+    QAction* m_save;
+    QAction* m_saveAs;
+    QAction* m_close;
     QMenu* m_view;
     QToolBar* m_modeling;
     QToolBar* m_visualization;

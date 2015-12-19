@@ -6,16 +6,23 @@
 #include "CutDriver.h"
 #include <TFunction_DriverTable.hxx>
 #include <QElapsedTimer>
+#include <QDebug>
 
 Application::Application(int &argc, char **argv):
     QApplication(argc, argv)
 {
     setAttribute(Qt::AA_NativeWindows);
 
-    m_app = new AppStd_Application();
+    //CSF_PluginDefaults;
+    //CSF_StandardDefaults;
+
+    m_ocafApp = new AppStd_Application();
     TFunction_DriverTable::Get()->AddDriver(CylinderDriver::GetID(), new CylinderDriver());
     TFunction_DriverTable::Get()->AddDriver(SphereDriver::GetID(), new SphereDriver());
     TFunction_DriverTable::Get()->AddDriver(CutDriver::GetID(), new CutDriver());
+
+    qInfo() << m_ocafApp->ResourcesName();
+    qInfo() << m_ocafApp->IsDriverLoaded();
 
     m_window = new MainWindow(this);
     m_window->show();
@@ -47,14 +54,14 @@ Document* Application::newDocument()
 void Application::closeDocument(Document *doc)
 {
     if(m_documents.removeOne(doc)) {
-        m_app->Close(doc->ocafDoc());
+        m_ocafApp->Close(doc->ocafDoc());
         delete doc;
     }
 }
 
 Handle(AppStd_Application) Application::ocafApp()
 {
-    return m_app;
+    return m_ocafApp;
 }
 
 void Application::wait(int ms)

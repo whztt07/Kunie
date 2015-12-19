@@ -20,7 +20,7 @@ public:
     void static wait(int ms);
 
 private:
-    Handle(AppStd_Application) m_app;
+    Handle(AppStd_Application) m_ocafApp;
     QList<Document*> m_documents;
     MainWindow* m_window;
 };

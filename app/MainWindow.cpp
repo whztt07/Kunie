@@ -11,6 +11,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QTabWidget>
+#include <QStandardPaths>
 
 MainWindow::MainWindow(Application *app):
     m_app(app)
@@ -29,18 +30,34 @@ MainWindow::MainWindow(Application *app):
 
     m_file = menuBar()->addMenu("&File");
 
-    QAction* newDoc = m_file->addAction("&New");
+    QAction* newDoc = m_file->addAction("&New...");
     newDoc->setShortcuts(QKeySequence::New);
     connect(newDoc, &QAction::triggered, this, &MainWindow::newDocument);
+
+    QAction* open = m_file->addAction("&Open...");
+    open->setShortcuts(QKeySequence::Open);
+    connect(open, &QAction::triggered, this, &MainWindow::newDocument);
+
+    m_import = m_file->addAction("&Import");
+    connect(m_import, &QAction::triggered, this, &MainWindow::import);
+
+    m_file->addSeparator();
+
+    m_save = m_file->addAction("&Save");
+    m_save->setShortcuts(QKeySequence::Save);
+    connect(m_save, &QAction::triggered, this, &MainWindow::save);
+
+    m_saveAs = m_file->addAction("Save &as...");
+    m_saveAs->setShortcuts(QKeySequence::SaveAs);
+    connect(m_saveAs, &QAction::triggered, this, &MainWindow::saveAs);
+
+    m_file->addSeparator();
 
     m_close = m_file->addAction("&Close");
     m_close->setShortcuts(QKeySequence::Close);
     connect(m_close, &QAction::triggered, this, &MainWindow::close);
 
-    m_import = m_file->addAction("&Import");
-    connect(m_import, &QAction::triggered, this, &MainWindow::import);
-
-    QAction* exitAct = m_file->addAction(tr("E&xit"));
+    QAction* exitAct = m_file->addAction(tr("&Quit"));
     exitAct->setShortcuts(QKeySequence::Quit);
     connect(exitAct, &QAction::triggered, this, &MainWindow::close);
 
@@ -73,11 +90,25 @@ void MainWindow::import()
                                                 "STL (*.stl);;"
                                                 );
 
-    if(!file.isEmpty()) {
-        QApplication::setOverrideCursor(Qt::WaitCursor);
-        currentDocument()->import(file);
-        QApplication::restoreOverrideCursor();
-    }
+    if(!file.isEmpty()) currentDocument()->import(file);
+}
+
+void MainWindow::save()
+{
+
+}
+
+void MainWindow::saveAs()
+{
+    QString file = QFileDialog::getSaveFileName(this, "Save As",
+                                                QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+                                                "All (*);;"
+                                                "MDTV-Standard (*.std);;"
+                                                "BinOcaf (*.cbf);;"
+                                                "XmlOcaf (*.xml);;"
+                                                );
+
+    if(!file.isEmpty()) currentDocument()->saveAs(file);
 }
 
 void MainWindow::newDocument()
@@ -107,14 +138,15 @@ void MainWindow::onCloseRequested(int index)
 }
 
 void MainWindow::onCurrentChanged()
-{    
+{
     updateActions();
 }
 
 void MainWindow::onError(const QString &msg)
 {
-    QApplication::restoreOverrideCursor();
+    QApplication::setOverrideCursor(Qt::ArrowCursor);
     QMessageBox::critical(this, "Error", msg);
+    QApplication::restoreOverrideCursor();
 }
 
 void MainWindow::updateActions()

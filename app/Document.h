@@ -34,6 +34,7 @@ public:
     void createSphere();
     void createCut();
     void import(const QString& file);
+    void saveAs(const QString& file);
 
 signals:
     void error(const QString& msg);

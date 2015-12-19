@@ -217,7 +217,7 @@ Graphic3d_NameOfMaterial Document::s_material = Graphic3d_NOM_PLASTER;
 
 static Handle(Graphic3d_GraphicDriver) graphicDriver;
 
-Document::Document(const QString& title, Application *app):
+Document::Document(const QString& title, Application* app):
     QObject(app),
     m_title(title),
     m_colorNum(0)
@@ -397,6 +397,34 @@ void Document::import(const QString& file)
         display(shapes);
         m_view->fitAll();
     }
+    QApplication::restoreOverrideCursor();
+}
+
+void Document::saveAs(const QString &file)
+{
+    QString ext = QFileInfo(file).suffix();
+    Handle(TopTools_HSequenceOfShape) shapes;
+
+    if(ext == "xml") {
+        m_document->ChangeStorageFormat("XmlOcaf");
+    } else if(ext == "cbf") {
+        m_document->ChangeStorageFormat("BinOcaf");
+    } else if(ext == "std") {
+        m_document->ChangeStorageFormat("MDTV-Standard");
+    } else {
+        emit error(QFileInfo(file).fileName() + " unknown file type");
+        return;
+    }
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    Handle(TDocStd_Application) app = Handle(TDocStd_Application)::DownCast(m_document->Application());
+
+    TCollection_ExtendedString statusMsg;
+    PCDM_StoreStatus status = app->SaveAs(m_document, file.toUtf8().data(), statusMsg);
+
+    if(status != PCDM_SS_OK)
+        emit error(QFileInfo(file).fileName() + " not saved.\n" + QString::fromUtf16((const ushort*)statusMsg.ToExtString()));
+
     QApplication::restoreOverrideCursor();
 }
 
