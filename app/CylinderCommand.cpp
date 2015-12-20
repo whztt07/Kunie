@@ -16,7 +16,7 @@ CylinderCommand::CylinderCommand(const TDF_Label& root):
 }
 
 TDF_Label CylinderCommand::createCylinder(Standard_Real x, Standard_Real y, Standard_Real z,
-                                          Standard_Real r, Standard_Real h, const TCollection_ExtendedString& Name)
+                                          Standard_Real r, Standard_Real h, const TCollection_ExtendedString& name)
 {
     // A data structure for our cylinder:
     // the cylinder itself is attached to the CylinderLabel label (as his name and his function attribute)
@@ -44,7 +44,7 @@ TDF_Label CylinderCommand::createCylinder(Standard_Real x, Standard_Real y, Stan
     TDataStd_Real::Set(label.FindChild(3), x);
     TDataStd_Real::Set(label.FindChild(4), y);
     TDataStd_Real::Set(label.FindChild(5), z);
-    TDataStd_Name::Set(label, Name);
+    TDataStd_Name::Set(label, name);
 
 
     // Instanciate a TFunction_Function attribute connected to the current cylinder driver

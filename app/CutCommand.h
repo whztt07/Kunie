@@ -8,7 +8,7 @@ class CutCommand
 public:
     CutCommand(const TDF_Label& root);
 
-    TDF_Label createCut(const TDF_Label& baseLab, const TDF_Label& toolLab);
+    TDF_Label createCut(const TDF_Label& baseLab, const TDF_Label& toolLab, const TCollection_ExtendedString& name);
 
 private:
     TDF_Label m_root;

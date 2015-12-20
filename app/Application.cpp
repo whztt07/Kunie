@@ -9,7 +9,7 @@
 #include <QMessageBox>
 #include <QElapsedTimer>
 #include <QDir>
-#include <QFile>
+#include <QFileInfo>
 
 Application::Application(int &argc, char **argv):
     QApplication(argc, argv)
@@ -33,21 +33,29 @@ MainWindow *Application::window()
     return m_window;
 }
 
-Document* Application::newDocument()
+Document* Application::newDocument(const QString& title)
 {
+    char name[64];
     int i, j = 1;
 
     // look for a unique new document title
     foreach(Document* doc, m_documents) {
-        if (sscanf(doc->title().toUtf8().constData(), "Untitled %d", &i)) {
+        if (sscanf(doc->title().toUtf8().constData(), "%64s <%d>", name, &i) == 2) {
             if (i >= j)
                 j = i + 1;
         }
     }
 
-    m_documents.append(new Document(QString("Untitled %1").arg(j), this));
+    m_documents.append(new Document(QString("%1 <%2>").arg(title).arg(j), this));
 
     return m_documents.last();
+}
+
+Document *Application::open(const QString file)
+{
+    Document* doc = newDocument(QFileInfo(file).fileName());
+    doc->open(file);
+    return doc;
 }
 
 void Application::closeDocument(Document *doc)
@@ -94,13 +102,13 @@ void Application::initEnv()
         qputenv("CSF_StandardDefaults", StdResource);
     }
 
-    if(!QFile(CSF_PluginDefaults).exists()) {
-        QMessageBox::critical(NULL, applicationName(), CSF_PluginDefaults + " does not exist");
+    if(!QFileInfo(CSF_PluginDefaults).isReadable()) {
+        QMessageBox::critical(NULL, applicationName(), CSF_PluginDefaults + " is not readable");
         ::exit(EXIT_FAILURE);
     }
 
-    if(!QFile(CSF_StandardDefaults).exists()) {
-        QMessageBox::critical(NULL, applicationName(), CSF_StandardDefaults + " does not exist");
+    if(!QFileInfo(CSF_StandardDefaults).isReadable()) {
+        QMessageBox::critical(NULL, applicationName(), CSF_StandardDefaults + " is not readable");
         ::exit(EXIT_FAILURE);
     }
 }

@@ -15,7 +15,7 @@ CutCommand::CutCommand(const TDF_Label& root):
 {
 }
 
-TDF_Label CutCommand::createCut(const TDF_Label& baseLab, const TDF_Label& toolLab)
+TDF_Label CutCommand::createCut(const TDF_Label& baseLab, const TDF_Label& toolLab, const TCollection_ExtendedString& name)
 {
     // A data structure for our cut operation:
     // the result itself is attached to the Result label (as his name and his function attribute)
@@ -35,10 +35,7 @@ TDF_Label CutCommand::createCut(const TDF_Label& baseLab, const TDF_Label& toolL
     // Create the data structure : Set a reference attribute on the Original and the Tool objects, set the name attribute
     TDF_Reference::Set(label.FindChild(1), baseLab);
     TDF_Reference::Set(label.FindChild(2), toolLab);
-    Handle(TDataStd_Name) baseName;
-    baseLab.FindAttribute(TDataStd_Name::GetID(), baseName);
-    TDataStd_Name::Set(label, baseName->Get());
-
+    TDataStd_Name::Set(label, name);
 
     // Instanciate a TFunction_Function attribute connected to the current cut driver
     // and attach it to the data structure as an attribute of the Result Label

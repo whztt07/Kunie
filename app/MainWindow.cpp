@@ -36,7 +36,7 @@ MainWindow::MainWindow(Application *app):
 
     QAction* open = m_file->addAction("&Open...");
     open->setShortcuts(QKeySequence::Open);
-    connect(open, &QAction::triggered, this, &MainWindow::newDocument);
+    connect(open, &QAction::triggered, this, &MainWindow::open);
 
     m_import = m_file->addAction("&Import");
     connect(m_import, &QAction::triggered, this, &MainWindow::import);
@@ -121,6 +121,28 @@ void MainWindow::newDocument()
     m_pages->setCurrentWidget(document->view()->widget());
 
     updateActions();
+}
+
+void MainWindow::open()
+{
+    QString file = QFileDialog::getOpenFileName(this, "Open",
+                                                QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+                                                "All (*);;"
+                                                "MDTV-Standard (*.std);;"
+                                                "BinOcaf (*.cbf);;"
+                                                "XmlOcaf (*.xml);;"
+                                                );
+
+    if(!file.isEmpty()) {
+        Document* document = m_app->open(file);
+        connect(document, &Document::error, this, &MainWindow::onError);
+
+        int index = m_pages->addTab(document->view()->widget(), document->title());
+        m_pages->setTabToolTip(index, document->title());
+        m_pages->setCurrentWidget(document->view()->widget());
+
+        updateActions();
+    }
 }
 
 void MainWindow::close()

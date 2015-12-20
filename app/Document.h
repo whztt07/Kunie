@@ -35,6 +35,7 @@ public:
     void createCylinder();
     void createSphere();
     void createCut();
+    void open(const QString& file);
     void import(const QString& file);
     void saveAs(const QString& file);
 
@@ -47,10 +48,12 @@ private:
 
     void insert(const TopoDS_Shape& shape);
     void initActions();
+    void displayPrs();
     Quantity_NameOfColor nextColor();
 
     QString m_title;
     Handle(TDocStd_Document) m_document;
+    Handle(V3d_Viewer) m_viewer;
     OccView* m_view;
     int m_colorNum;
 

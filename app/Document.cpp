@@ -28,6 +28,7 @@
 #include <TPrsStd_AISViewer.hxx>
 #include <TPrsStd_AISPresentation.hxx>
 #include <TNaming_NamedShape.hxx>
+#include <TDF_ChildIterator.hxx>
 
 TopoDS_Shape MakeBottle(const Standard_Real myWidth, const Standard_Real myHeight, const Standard_Real myThickness);
 
@@ -213,7 +214,7 @@ Quantity_NameOfColor Document::s_colors[] = {
 };
 
 int Document::s_maxColor = sizeof(Document::s_colors) / sizeof(Quantity_NameOfColor);
-Graphic3d_NameOfMaterial Document::s_material = Graphic3d_NOM_PLASTER;
+Graphic3d_NameOfMaterial Document::s_material = Graphic3d_NOM_ALUMINIUM;
 
 static Handle(Graphic3d_GraphicDriver) graphicDriver;
 
@@ -227,12 +228,12 @@ Document::Document(const QString& title, Application* app):
         graphicDriver = new OpenGl_GraphicDriver(display);
     }
 
-    Handle(V3d_Viewer) viewer = new V3d_Viewer(graphicDriver, (short* const)"viewer");
-    viewer->SetDefaultLights();
-    viewer->SetLightOn();
+    m_viewer = new V3d_Viewer(graphicDriver, (const short*)"viewer");
+    m_viewer->SetDefaultLights();
+    m_viewer->SetLightOn();
 
     app->ocafApp()->NewDocument("MDTV-Standard", m_document);
-    TPrsStd_AISViewer::New(m_document->Main(), viewer);
+    TPrsStd_AISViewer::New(m_document->Main(), m_viewer);
     context()->SetDisplayMode(AIS_Shaded);
 
     m_view = new OccView(this);
@@ -360,17 +361,38 @@ void Document::createCut()
     m_view->fitAll();
     Application::wait(1000);
 
-    TDF_Label cut = cmd.createCut(base, tool);
+    TDF_Label cut = cmd.createCut(base, tool, "Cut");
     Handle(TPrsStd_AISPresentation) prsCut = TPrsStd_AISPresentation::Set(cut, TNaming_NamedShape::GetID());
     prsCut->SetMaterial(s_material);
     prsCut->SetColor(nextColor());
+    prsCut->SetMode(AIS_Shaded);
 
-    prsBase->Erase(0);
-    prsTool->Erase(0);
+    prsBase->Erase();
+    prsTool->Erase();
     prsCut->Display(1);
+    prsCut->SetDisplayed(Standard_True);
     context()->UpdateCurrentViewer();
 
     m_document->CommitCommand();
+    QApplication::restoreOverrideCursor();
+}
+
+void Document::open(const QString &file)
+{
+    TCollection_ExtendedString filePath = file.toUtf8().data();
+
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    PCDM_ReaderStatus status = ocafApp()->Open(filePath, m_document);
+
+    if(status != PCDM_RS_OK)
+        emit error(QFileInfo(file).fileName() + " not open");
+    else {
+        TPrsStd_AISViewer::New(m_document->Main(), m_viewer);
+        context()->SetDisplayMode(AIS_Shaded);
+        displayPrs();
+    }
+
     QApplication::restoreOverrideCursor();
 }
 
@@ -455,6 +477,18 @@ void Document::initActions()
 
     QAction* createCut = new QAction(QPixmap(":/icons/Cut.png"), "C&ut", m_actions);
     connect(createCut, &QAction::triggered, this, &Document::createCut);
+}
+
+void Document::displayPrs()
+{
+    for(TDF_ChildIterator it(m_document->Main()); it.More(); it.Next()) {
+        Handle(TPrsStd_AISPresentation) prs;
+        if(!it.Value().FindAttribute(TPrsStd_AISPresentation::GetID(), prs)) continue;
+        if(prs->IsDisplayed())
+            prs->Display(1);
+    }
+
+    context()->UpdateCurrentViewer();
 }
 
 Quantity_NameOfColor Document::nextColor()

@@ -14,7 +14,8 @@ public:
     Application(int& argc, char** argv);
     Handle(TDocStd_Application) ocafApp();
     MainWindow* window();
-    Document* newDocument();
+    Document* newDocument(const QString& title = "Untitle");
+    Document* open(const QString file);
     void closeDocument(Document* doc);
 
     void static wait(int ms);
