@@ -17,7 +17,7 @@ MainWindow::MainWindow(Application *app):
     m_app(app)
 {
     setWindowTitle("Kunie");
-    resize(1024, 768);
+    resize(1366, 768);
     m_pages = new QTabWidget(this);
     m_pages->setDocumentMode(true);
     m_pages->setTabsClosable(true);
@@ -80,15 +80,10 @@ Document *MainWindow::currentDocument()
 
 void MainWindow::import()
 {
-    QString file = QFileDialog::getOpenFileName(this, "Import", qgetenv("CASROOT") + "/data",
-                                                "All (*);;"
-                                                "BREP (*.brep *.rle);;"
-                                                "IGES (*.igs *.iges);;"
-                                                "STEP (*.stp *.step);;"
-                                                "CSFDB (*.csfdb);;"
-                                                "VRML (*.vrml);;"
-                                                "STL (*.stl);;"
-                                                );
+    QString file =
+            QFileDialog::getOpenFileName(this, "Import", qgetenv("CASROOT") + "/data",
+                                         "All (*);;BREP (*.brep *.rle);;IGES (*.igs *.iges);;STEP (*.stp *.step);;"
+                                         "CSFDB (*.csfdb);;VRML (*.vrml);;STL (*.stl)");
 
     if(!file.isEmpty()) currentDocument()->import(file);
 }
@@ -100,48 +95,28 @@ void MainWindow::save()
 
 void MainWindow::saveAs()
 {
-    QString file = QFileDialog::getSaveFileName(this, "Save As",
-                                                QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
-                                                "All (*);;"
-                                                "MDTV-Standard (*.std);;"
-                                                "BinOcaf (*.cbf);;"
-                                                "XmlOcaf (*.xml);;"
-                                                );
+    QString file =
+            QFileDialog::getSaveFileName(this, "Save As", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+                                         "All (*);;MDTV-Standard (*.std);;BinOcaf (*.cbf);;XmlOcaf (*.xml)");
 
     if(!file.isEmpty()) currentDocument()->saveAs(file);
 }
 
 void MainWindow::newDocument()
 {
-    Document* document = m_app->newDocument();
-    connect(document, &Document::error, this, &MainWindow::onError);
-
-    int index = m_pages->addTab(document->view()->widget(), document->title());
-    m_pages->setTabToolTip(index, document->title());
-    m_pages->setCurrentWidget(document->view()->widget());
-
-    updateActions();
+    Document* doc = m_app->newDocument();
+    addDocument(doc);
 }
 
 void MainWindow::open()
 {
-    QString file = QFileDialog::getOpenFileName(this, "Open",
-                                                QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
-                                                "All (*);;"
-                                                "MDTV-Standard (*.std);;"
-                                                "BinOcaf (*.cbf);;"
-                                                "XmlOcaf (*.xml);;"
-                                                );
+    QString file =
+            QFileDialog::getOpenFileName(this, "Open", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+                                         "All (*);;MDTV-Standard (*.std);;BinOcaf (*.cbf);;XmlOcaf (*.xml)");
 
     if(!file.isEmpty()) {
-        Document* document = m_app->open(file);
-        connect(document, &Document::error, this, &MainWindow::onError);
-
-        int index = m_pages->addTab(document->view()->widget(), document->title());
-        m_pages->setTabToolTip(index, document->title());
-        m_pages->setCurrentWidget(document->view()->widget());
-
-        updateActions();
+        Document* doc = m_app->open(file);
+        if(doc) addDocument(doc);
     }
 }
 
@@ -189,4 +164,13 @@ void MainWindow::updateActions()
     } else {
         setWindowTitle("Kunie");
     }
+}
+
+void MainWindow::addDocument(Document* doc)
+{
+    connect(doc, &Document::error, this, &MainWindow::onError);
+    int index = m_pages->addTab(doc->view()->widget(), doc->title());
+    m_pages->setTabToolTip(index, doc->title());
+    m_pages->setCurrentWidget(doc->view()->widget());
+    updateActions();
 }

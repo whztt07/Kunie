@@ -232,8 +232,8 @@ Document::Document(const QString& title, Application* app):
     m_viewer->SetDefaultLights();
     m_viewer->SetLightOn();
 
-    app->ocafApp()->NewDocument("MDTV-Standard", m_document);
-    TPrsStd_AISViewer::New(m_document->Main(), m_viewer);
+    app->ocafApp()->NewDocument("MDTV-Standard", m_ocafDoc);
+    TPrsStd_AISViewer::New(m_ocafDoc->Main(), m_viewer);
     context()->SetDisplayMode(AIS_Shaded);
 
     m_view = new OccView(this);
@@ -269,18 +269,18 @@ Handle(V3d_Viewer) Document::viewer()
 Handle(AIS_InteractiveContext) Document::context()
 {
     Handle(AIS_InteractiveContext) context;
-    TPrsStd_AISViewer::Find(m_document->Main(), context);
+    TPrsStd_AISViewer::Find(m_ocafDoc->Main(), context);
     return context;
 }
 
 Handle(TDocStd_Document) Document::ocafDoc()
 {
-    return m_document;
+    return m_ocafDoc;
 }
 
 Handle(TDocStd_Application) Document::ocafApp()
 {
-    return Handle(TDocStd_Application)::DownCast(m_document->Application());
+    return Handle(TDocStd_Application)::DownCast(m_ocafDoc->Application());
 }
 
 void Document::display(const TopoDS_Shape& shape)
@@ -310,40 +310,40 @@ void Document::createBottle()
 void Document::createCylinder()
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    m_document->NewCommand();
-    CylinderCommand cmd(m_document->Main());
+    m_ocafDoc->NewCommand();
+    CylinderCommand cmd(m_ocafDoc->Main());
     TDF_Label label = cmd.createCylinder(0, 0, 0, 10, 50, "Cylindre");
     Handle(TPrsStd_AISPresentation) prs = TPrsStd_AISPresentation::Set(label, TNaming_NamedShape::GetID());
     prs->SetMaterial(s_material);
     prs->SetColor(nextColor());
     prs->Display(1);
     context()->UpdateCurrentViewer();
-    m_document->CommitCommand();
+    m_ocafDoc->CommitCommand();
     QApplication::restoreOverrideCursor();
 }
 
 void Document::createSphere()
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    m_document->NewCommand();
-    SphereCommand cmd(m_document->Main());
+    m_ocafDoc->NewCommand();
+    SphereCommand cmd(m_ocafDoc->Main());
     TDF_Label label = cmd.createSphere(0, 0, 0, 0.5, "Sphere");
     Handle(TPrsStd_AISPresentation) prs = TPrsStd_AISPresentation::Set(label, TNaming_NamedShape::GetID());
     prs->SetMaterial(s_material);
     prs->SetColor(nextColor());
     prs->Display(1);
     context()->UpdateCurrentViewer();
-    m_document->CommitCommand();
+    m_ocafDoc->CommitCommand();
     QApplication::restoreOverrideCursor();
 }
 
 void Document::createCut()
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    m_document->NewCommand();
-    CutCommand cmd(m_document->Main());
+    m_ocafDoc->NewCommand();
+    CutCommand cmd(m_ocafDoc->Main());
 
-    CylinderCommand cylinCmd(m_document->Main());
+    CylinderCommand cylinCmd(m_ocafDoc->Main());
     TDF_Label base = cylinCmd.createCylinder(0, 10, -30, 10, 60, "Cylinder");
     Handle(TPrsStd_AISPresentation) prsBase = TPrsStd_AISPresentation::Set(base, TNaming_NamedShape::GetID());
     prsBase->SetMaterial(s_material);
@@ -352,7 +352,7 @@ void Document::createCut()
     m_view->fitAll();
     Application::wait(500);
 
-    SphereCommand sphereCmd(m_document->Main());
+    SphereCommand sphereCmd(m_ocafDoc->Main());
     TDF_Label tool = sphereCmd.createSphere(0, 0, 0, 15, "Sphere");
     Handle(TPrsStd_AISPresentation) prsTool = TPrsStd_AISPresentation::Set(tool, TNaming_NamedShape::GetID());
     prsTool->SetMaterial(s_material);
@@ -373,30 +373,31 @@ void Document::createCut()
     prsCut->SetDisplayed(Standard_True);
     context()->UpdateCurrentViewer();
 
-    m_document->CommitCommand();
+    m_ocafDoc->CommitCommand();
     QApplication::restoreOverrideCursor();
 }
 
-void Document::open(const QString &file)
+bool Document::open(const QString& file)
 {
     TCollection_ExtendedString filePath = file.toUtf8().data();
 
-
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    PCDM_ReaderStatus status = ocafApp()->Open(filePath, m_document);
+    PCDM_ReaderStatus status = ocafApp()->Open(filePath, m_ocafDoc);
 
     if(status != PCDM_RS_OK)
         emit error(QFileInfo(file).fileName() + " not open");
     else {
-        TPrsStd_AISViewer::New(m_document->Main(), m_viewer);
+        TPrsStd_AISViewer::New(m_ocafDoc->Main(), m_viewer);
         context()->SetDisplayMode(AIS_Shaded);
         displayPrs();
     }
 
     QApplication::restoreOverrideCursor();
+
+    return (status == PCDM_RS_OK);
 }
 
-void Document::import(const QString& file)
+bool Document::import(const QString& file)
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
     QString ext = QFileInfo(file).suffix();
@@ -424,34 +425,39 @@ void Document::import(const QString& file)
         display(shapes);
         m_view->fitAll();
     }
+
     QApplication::restoreOverrideCursor();
+
+    return (!shapes.IsNull() && shapes->Length());
 }
 
-void Document::saveAs(const QString &file)
+bool Document::saveAs(const QString &file)
 {
     QString ext = QFileInfo(file).suffix();
     Handle(TopTools_HSequenceOfShape) shapes;
 
     if(ext == "xml") {
-        m_document->ChangeStorageFormat("XmlOcaf");
+        m_ocafDoc->ChangeStorageFormat("XmlOcaf");
     } else if(ext == "cbf") {
-        m_document->ChangeStorageFormat("BinOcaf");
+        m_ocafDoc->ChangeStorageFormat("BinOcaf");
     } else if(ext == "std") {
-        m_document->ChangeStorageFormat("MDTV-Standard");
+        m_ocafDoc->ChangeStorageFormat("MDTV-Standard");
     } else {
         emit error(QFileInfo(file).fileName() + " unknown file type");
-        return;
+        return false;
     }
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
 
     TCollection_ExtendedString statusMsg;
-    PCDM_StoreStatus status = ocafApp()->SaveAs(m_document, file.toUtf8().data(), statusMsg);
+    PCDM_StoreStatus status = ocafApp()->SaveAs(m_ocafDoc, file.toUtf8().data(), statusMsg);
 
     if(status != PCDM_SS_OK)
         emit error(QFileInfo(file).fileName() + " not saved.\n" + QString::fromUtf16((const ushort*)statusMsg.ToExtString()));
 
     QApplication::restoreOverrideCursor();
+
+    return (status == PCDM_SS_OK);
 }
 
 void Document::insert(const TopoDS_Shape& shape)
@@ -481,7 +487,7 @@ void Document::initActions()
 
 void Document::displayPrs()
 {
-    for(TDF_ChildIterator it(m_document->Main()); it.More(); it.Next()) {
+    for(TDF_ChildIterator it(m_ocafDoc->Main()); it.More(); it.Next()) {
         Handle(TPrsStd_AISPresentation) prs;
         if(!it.Value().FindAttribute(TPrsStd_AISPresentation::GetID(), prs)) continue;
         if(prs->IsDisplayed())

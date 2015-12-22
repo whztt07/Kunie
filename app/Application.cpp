@@ -54,8 +54,12 @@ Document* Application::newDocument(const QString& title)
 Document *Application::open(const QString file)
 {
     Document* doc = newDocument(QFileInfo(file).fileName());
-    doc->open(file);
-    return doc;
+    if(doc->open(file))
+        return doc;
+    else {
+        closeDocument(doc);
+        return NULL;
+    }
 }
 
 void Application::closeDocument(Document *doc)

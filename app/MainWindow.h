@@ -28,6 +28,7 @@ private:
     void onCloseRequested(int index);
     void onError(const QString& msg);
     void updateActions();
+    void addDocument(Document* doc);
 
     QTabWidget* m_pages;
     Application* m_app;

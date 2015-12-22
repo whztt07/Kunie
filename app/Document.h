@@ -35,15 +35,16 @@ public:
     void createCylinder();
     void createSphere();
     void createCut();
-    void open(const QString& file);
-    void import(const QString& file);
-    void saveAs(const QString& file);
+    bool open(const QString& file);
+    bool import(const QString& file);
+    bool save();
+    bool saveAs(const QString& file);
 
 signals:
     void error(const QString& msg);
 
 private:
-    explicit Document(const QString& title, Application* app);
+    Document(const QString& title, Application* app);
     ~Document();
 
     void insert(const TopoDS_Shape& shape);
@@ -52,7 +53,7 @@ private:
     Quantity_NameOfColor nextColor();
 
     QString m_title;
-    Handle(TDocStd_Document) m_document;
+    Handle(TDocStd_Document) m_ocafDoc;
     Handle(V3d_Viewer) m_viewer;
     OccView* m_view;
     int m_colorNum;
