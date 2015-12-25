@@ -5,6 +5,7 @@
 
 class Application;
 class Document;
+class QTreeView;
 class QTabWidget;
 class QActionGroup;
 
@@ -30,6 +31,7 @@ private:
     void updateActions();
     void addDocument(Document* doc);
 
+    QTreeView* m_treeView;
     QTabWidget* m_pages;
     Application* m_app;
     QMenu* m_file;

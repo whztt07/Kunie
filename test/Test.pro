@@ -25,6 +25,7 @@ SOURCES += \
     ../app/SphereCommand.cpp \
     ../app/CutDriver.cpp \
     ../app/CutCommand.cpp \
+    ../app/OcafModel.cpp \
     KunieTest.cpp
 
 HEADERS += \
@@ -39,6 +40,7 @@ HEADERS += \
     ../app/SphereCommand.h \
     ../app/CutDriver.h \
     ../app/CutCommand.h \
+    ../app/OcafModel.h \
     KunieTest.h
 
 QMAKE_CXXFLAGS += -isystem $$CASROOT/inc

@@ -3,6 +3,7 @@
 #include "OccView.h"
 #include "Document.h"
 #include "OccView.h"
+#include "OcafModel.h"
 
 #include <QMenuBar>
 #include <QToolBar>
@@ -12,13 +13,18 @@
 #include <QMessageBox>
 #include <QTabWidget>
 #include <QStandardPaths>
+#include <QSplitter>
+#include <QTreeView>
 
 MainWindow::MainWindow(Application *app):
     m_app(app)
 {
     setWindowTitle("Kunie");
     resize(1366, 768);
-    m_pages = new QTabWidget(this);
+
+    QSplitter* splitter = new QSplitter(this);
+
+    m_pages = new QTabWidget;
     m_pages->setDocumentMode(true);
     m_pages->setTabsClosable(true);
     m_pages->setMovable(true);
@@ -26,7 +32,14 @@ MainWindow::MainWindow(Application *app):
     m_pages->setTabPosition(QTabWidget::South);
     connect(m_pages, &QTabWidget::tabCloseRequested, this, &MainWindow::onCloseRequested);
     connect(m_pages, &QTabWidget::currentChanged, this, &MainWindow::updateActions);
-    setCentralWidget(m_pages);
+
+    m_treeView = new QTreeView;
+    splitter->addWidget(m_treeView);
+    splitter->addWidget(m_pages);
+
+    splitter->setStretchFactor(0, 0);
+    splitter->setStretchFactor(1, 1);
+    setCentralWidget(splitter);
 
     m_file = menuBar()->addMenu("&File");
 
@@ -116,7 +129,10 @@ void MainWindow::open()
 
     if(!file.isEmpty()) {
         Document* doc = m_app->open(file);
-        if(doc) addDocument(doc);
+        if(doc) {
+            addDocument(doc);
+            m_treeView->setModel(new OcafModel(doc));
+        }
     }
 }
 

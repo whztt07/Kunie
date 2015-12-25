@@ -22,7 +22,11 @@ SOURCES += \
     SphereDriver.cpp \
     SphereCommand.cpp \
     CutDriver.cpp \
-    CutCommand.cpp
+    CutCommand.cpp \
+    OcafModel.cpp \
+    OcafItem.cpp \
+    LabelItem.cpp \
+    AttributeItem.cpp
 
 HEADERS += \
     MainWindow.h \
@@ -35,7 +39,11 @@ HEADERS += \
     SphereDriver.h \
     SphereCommand.h \
     CutDriver.h \
-    CutCommand.h
+    CutCommand.h \
+    OcafModel.h \
+    OcafItem.h \
+    LabelItem.h \
+    AttributeItem.h
 
 QMAKE_CXXFLAGS += -isystem $$CASROOT/inc
 
