@@ -216,22 +216,24 @@ void OccView::wheelEvent(QWheelEvent* ev)
 
 void OccView::mouseMoveEvent(QMouseEvent*)
 {
-    QPoint curPos = mapFromGlobal(QCursor::pos());
-    if (curPos == m_precPos) return;
+    if (m_view->IfWindow()) {
+        QPoint curPos = mapFromGlobal(QCursor::pos());
+        if (curPos == m_precPos) return;
 
-    switch (m_mode) {
-    case Selection:
-        m_document->context()->MoveTo(curPos.x(), curPos.y(), m_view);
-        break;
-    case Rotation:
-        m_view->Rotation(curPos.x(), curPos.y());
-        break;
-    case Panning:
-        m_view->Pan(curPos.x() - m_precPos.x(), m_precPos.y() - curPos.y());
-        break;
+        switch (m_mode) {
+        case Selection:
+            m_document->context()->MoveTo(curPos.x(), curPos.y(), m_view);
+            break;
+        case Rotation:
+            m_view->Rotation(curPos.x(), curPos.y());
+            break;
+        case Panning:
+            m_view->Pan(curPos.x() - m_precPos.x(), m_precPos.y() - curPos.y());
+            break;
+        }
+
+        m_precPos = curPos;
     }
-
-    m_precPos = curPos;
 }
 
 void OccView::mousePressEvent(QMouseEvent* ev)
