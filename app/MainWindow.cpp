@@ -138,14 +138,15 @@ void MainWindow::open()
 
 void MainWindow::close()
 {
-    Document* document = currentDocument();
-    m_pages->removeTab(m_pages->currentIndex());
-    m_app->closeDocument(document);
+    onCloseRequested(m_pages->currentIndex());
 }
 
 void MainWindow::onCloseRequested(int index)
 {
-    Document* document = OccView::document(m_pages->widget(index));
+    QWidget* widget = m_pages->widget(index);
+    Document* document = OccView::document(widget);
+    m_pages->removeTab(index);
+    delete widget;
     m_app->closeDocument(document);
     updateActions();
 }

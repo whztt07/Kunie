@@ -243,7 +243,6 @@ Document::Document(const QString& title, Application* app):
 
 Document::~Document()
 {
-    delete m_view->widget();
 }
 
 QString Document::title()

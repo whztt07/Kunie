@@ -46,7 +46,7 @@ HEADERS += \
     AttributeItem.h
 
 linux:QMAKE_CXXFLAGS += -isystem $$CASROOT/inc
-win32:QMAKE_CXXFLAGS += -isystem  C:\\OCE\\OCE-0.17\\include\\oce
+win32:QMAKE_CXXFLAGS += -isystem C:\\OCE\\OCE-0.17\\include\\oce
 
 linux:INCLUDEPATH += $$CASROOT/inc
 win32:INCLUDEPATH += C:\\OCE\\OCE-0.17\\include\\oce
