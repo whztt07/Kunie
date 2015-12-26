@@ -14,7 +14,7 @@ public:
     virtual OcafItem* child(int row) = 0;
     virtual int childCount() const = 0;
     int columnCount() const;
-    virtual QVariant data(int column) const = 0;
+    virtual QVariant data(int column, int role) const = 0;
     int row() const;
     LabelItem *parentItem();
 

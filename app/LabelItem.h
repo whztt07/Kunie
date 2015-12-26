@@ -11,10 +11,9 @@ public:
     LabelItem(TDF_Label label, LabelItem *parent = 0);
     ~LabelItem();
 
-    virtual OcafItem* child(int row);
-    virtual int childCount() const;
-    virtual QVariant data(int column) const;
-    int row() const;
+    OcafItem* child(int row);
+    int childCount() const;
+    QVariant data(int column, int role) const;
 
 private:
     TDF_Label m_label;

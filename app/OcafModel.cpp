@@ -70,12 +70,8 @@ QVariant OcafModel::data(const QModelIndex& index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (role != Qt::DisplayRole)
-        return QVariant();
-
     OcafItem *item = static_cast<OcafItem*>(index.internalPointer());
-
-    return item->data(index.column());
+    return item->data(index.column(), role);
 }
 
 QVariant OcafModel::headerData(int section, Qt::Orientation orientation, int role) const
