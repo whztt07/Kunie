@@ -29,6 +29,13 @@
 #include <TPrsStd_AISPresentation.hxx>
 #include <TNaming_NamedShape.hxx>
 #include <TDF_ChildIterator.hxx>
+#include <IGESCAFControl_Reader.hxx>
+#include <STEPCAFControl_Reader.hxx>
+#include <XCAFDoc_DocumentTool.hxx>
+#include <XCAFDoc_ShapeTool.hxx>
+#include <TDF_LabelSequence.hxx>
+#include <TNaming_Builder.hxx>
+
 
 TopoDS_Shape MakeBottle(const Standard_Real myWidth, const Standard_Real myHeight, const Standard_Real myThickness);
 
@@ -232,9 +239,11 @@ Document::Document(const QString& title, Application* app):
     m_viewer->SetDefaultLights();
     m_viewer->SetLightOn();
 
-    app->ocafApp()->NewDocument("MDTV-Standard", m_ocafDoc);
+    app->ocafApp()->NewDocument("MDTV-XCAF", m_ocafDoc);
     TPrsStd_AISViewer::New(m_ocafDoc->Main(), m_viewer);
     context()->SetDisplayMode(AIS_Shaded);
+
+    m_shapeTool = XCAFDoc_DocumentTool::ShapeTool(m_ocafDoc->Main());
 
     m_view = new OccView(this);
 
@@ -378,22 +387,47 @@ void Document::createCut()
 
 bool Document::open(const QString& file)
 {
-    TCollection_ExtendedString filePath = file.toUtf8().data();
-
+    bool success = false;
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    PCDM_ReaderStatus status = ocafApp()->Open(filePath, m_ocafDoc);
+    QString ext = QFileInfo(file).suffix();
 
-    if(status != PCDM_RS_OK)
-        emit error(QFileInfo(file).fileName() + " not open");
-    else {
-        TPrsStd_AISViewer::New(m_ocafDoc->Main(), m_viewer);
-        context()->SetDisplayMode(AIS_Shaded);
-        displayPrs();
+    if (ext == "igs" || ext == "iges") {
+        IGESCAFControl_Reader reader;
+        IFSelect_ReturnStatus  status = reader.ReadFile(file.toUtf8().data());
+        success =  (status == IFSelect_RetDone);
+
+        if(!success)
+            emit error(QFileInfo(file).fileName() + " not open");
+        else {
+            reader.Transfer(m_ocafDoc);
+            loadShapes();
+        }
+    } else if (ext == "stp" || ext == "step") {
+        STEPCAFControl_Reader reader;
+        IFSelect_ReturnStatus  status = reader.ReadFile(file.toUtf8().data());
+        success =  (status == IFSelect_RetDone);
+
+        if(!success)
+            emit error(QFileInfo(file).fileName() + " not open");
+        else {
+            reader.Transfer(m_ocafDoc);
+            loadShapes();
+        }
+    } else {
+        PCDM_ReaderStatus status = ocafApp()->Open(file.toUtf8().data(), m_ocafDoc);
+        success =  (status == PCDM_RS_OK);
+
+        if (!success)
+            emit error(QFileInfo(file).fileName() + " not open");
+        else {
+            TPrsStd_AISViewer::New(m_ocafDoc->Main(), m_viewer);
+            context()->SetDisplayMode(AIS_Shaded);
+            displayPrs();
+        }
     }
 
     QApplication::restoreOverrideCursor();
-
-    return (status == PCDM_RS_OK);
+    return success;
 }
 
 bool Document::import(const QString& file)
@@ -435,12 +469,16 @@ bool Document::saveAs(const QString &file)
     QString ext = QFileInfo(file).suffix();
     Handle(TopTools_HSequenceOfShape) shapes;
 
-    if(ext == "xml") {
-        m_ocafDoc->ChangeStorageFormat("XmlOcaf");
-    } else if(ext == "cbf") {
-        m_ocafDoc->ChangeStorageFormat("BinOcaf");
+    if(ext == "dxc") {
+        m_ocafDoc->ChangeStorageFormat("MDTV-XCAF");
+    } else if(ext == "xml") {
+        m_ocafDoc->ChangeStorageFormat("XmlXCAF");
+    } else if(ext == "xbf") {
+        m_ocafDoc->ChangeStorageFormat("BinXCAF");
     } else if(ext == "std") {
         m_ocafDoc->ChangeStorageFormat("MDTV-Standard");
+    } else if(ext == "cbf") {
+        m_ocafDoc->ChangeStorageFormat("BinOcaf");
     } else {
         emit error(QFileInfo(file).fileName() + " unknown file type");
         return false;
@@ -501,4 +539,38 @@ Quantity_NameOfColor Document::nextColor()
     Quantity_NameOfColor color = s_colors[m_colorNum++];
     m_colorNum %= s_maxColor;
     return color;
+}
+
+void Document::loadShapes()
+{
+    // collect sequence of labels to display
+    TDF_LabelSequence shapeLabels;
+    m_shapeTool->GetFreeShapes(shapeLabels);
+
+    // set presentations and show
+    for (Standard_Integer i = 1; i <= shapeLabels.Length(); i++) {
+        // get the shapes and attributes
+        const TDF_Label& label = shapeLabels.Value(i);
+        loadShapes(label);
+    }
+}
+
+void Document::loadShapes(const TDF_Label& label)
+{
+    TopoDS_Shape shape;
+    if (m_shapeTool->GetShape(label, shape)) {
+        TNaming_Builder builder(label);
+        builder.Generated(shape);
+        Handle(TPrsStd_AISPresentation) prs = TPrsStd_AISPresentation::Set(label, TNaming_NamedShape::GetID());
+        prs->SetMaterial(s_material);
+        prs->SetColor(nextColor());
+        prs->Display(1);
+
+        if (label.HasChild()) {
+            TDF_ChildIterator it;
+            for (it.Initialize(label); it.More(); it.Next()) {
+                loadShapes(it.Value());
+            }
+        }
+    }
 }

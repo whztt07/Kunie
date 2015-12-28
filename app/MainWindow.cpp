@@ -110,7 +110,8 @@ void MainWindow::saveAs()
 {
     QString file =
             QFileDialog::getSaveFileName(this, "Save As", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
-                                         "All (*);;MDTV-Standard (*.std);;BinOcaf (*.cbf);;XmlOcaf (*.xml)");
+                                         "All (*);;MDTV-XCAF (*.dxc);;XmlXCAF (*.xml);;BinXCAF (*.xbf);;"
+                                         "MDTV-Standard (*.std);;BinOcaf (*.cbf)");
 
     if(!file.isEmpty()) currentDocument()->saveAs(file);
 }
@@ -125,13 +126,15 @@ void MainWindow::open()
 {
     QString file =
             QFileDialog::getOpenFileName(this, "Open", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
-                                         "All (*);;MDTV-Standard (*.std);;BinOcaf (*.cbf);;XmlOcaf (*.xml)");
+                                         "All (*);;MDTV-XCAF (*.dxc);;XmlXCAF (*.xml);;BinXCAF (*.xbf);;"
+                                         "MDTV-Standard (*.std);;BinOcaf (*.cbf);;IGES (*.igs *.iges);;STEP (*.stp *.step)");
 
     if(!file.isEmpty()) {
         Document* doc = m_app->open(file);
         if(doc) {
             addDocument(doc);
             m_treeView->setModel(new OcafModel(doc));
+            doc->view()->fitAll();
         }
     }
 }

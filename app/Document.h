@@ -8,6 +8,7 @@
 #include <TopTools_HSequenceOfShape.hxx>
 #include <TDocStd_Document.hxx>
 #include <TDocStd_Application.hxx>
+#include <XCAFDoc_ShapeTool.hxx>
 
 class Application;
 class OccView;
@@ -51,9 +52,12 @@ private:
     void initActions();
     void displayPrs();
     Quantity_NameOfColor nextColor();
+    void loadShapes();
+    void loadShapes(const TDF_Label& label);
 
     QString m_title;
     Handle(TDocStd_Document) m_ocafDoc;
+    Handle(XCAFDoc_ShapeTool) m_shapeTool;
     Handle(V3d_Viewer) m_viewer;
     OccView* m_view;
     int m_colorNum;

@@ -18,7 +18,7 @@ Application::Application(int &argc, char **argv):
 
     initEnv();
 
-    m_ocafApp = new AppStd_Application();
+    m_ocafApp = XCAFApp_Application::GetApplication();
     TFunction_DriverTable::Get()->AddDriver(CylinderDriver::GetID(), new CylinderDriver());
     TFunction_DriverTable::Get()->AddDriver(SphereDriver::GetID(), new SphereDriver());
     TFunction_DriverTable::Get()->AddDriver(CutDriver::GetID(), new CutDriver());
@@ -70,7 +70,7 @@ void Application::closeDocument(Document *doc)
     }
 }
 
-Handle(TDocStd_Application) Application::ocafApp()
+Handle(XCAFApp_Application) Application::ocafApp()
 {
     return m_ocafApp;
 }
@@ -89,7 +89,7 @@ void Application::initEnv()
     QByteArray CASROOT = qgetenv("CASROOT");
     QByteArray StdResource = CASROOT + QDir::separator().toLatin1() + "src" + QDir::separator().toLatin1() + "StdResource";
     QByteArray CSF_PluginDefaults = qgetenv("CSF_PluginDefaults");
-    QByteArray CSF_StandardDefaults = qgetenv("CSF_StandardDefaults");
+    QByteArray CSF_XCAFDefaults = qgetenv("CSF_XCAFDefaults");
 
     if(CASROOT.isEmpty()) {
         QMessageBox::critical(NULL, applicationName(), "CASROOT not set");
@@ -101,9 +101,9 @@ void Application::initEnv()
         qputenv("CSF_PluginDefaults", StdResource);
     }
 
-    if(CSF_StandardDefaults.isEmpty()) {
-        CSF_StandardDefaults = StdResource + QDir::separator().toLatin1() + "Standard";
-        qputenv("CSF_StandardDefaults", StdResource);
+    if(CSF_XCAFDefaults.isEmpty()) {
+        CSF_XCAFDefaults = StdResource + QDir::separator().toLatin1() + "XCAF";
+        qputenv("CSF_XCAFDefaults", StdResource);
     }
 
     if(!QFileInfo(CSF_PluginDefaults).isReadable()) {
@@ -111,8 +111,8 @@ void Application::initEnv()
         ::exit(EXIT_FAILURE);
     }
 
-    if(!QFileInfo(CSF_StandardDefaults).isReadable()) {
-        QMessageBox::critical(NULL, applicationName(), CSF_StandardDefaults + " is not readable");
+    if(!QFileInfo(CSF_XCAFDefaults).isReadable()) {
+        QMessageBox::critical(NULL, applicationName(), CSF_XCAFDefaults + " is not readable");
         ::exit(EXIT_FAILURE);
     }
 }

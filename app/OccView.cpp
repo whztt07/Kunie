@@ -27,7 +27,7 @@ QMap<QWidget*, Document*> OccView::m_map;
 OccView::OccView(Document* document):
     m_document(document),
     m_mode(Selection)
-{   
+{
     QSurfaceFormat format;
     format.setDepthBufferSize(16);
     format.setStencilBufferSize(1);
@@ -284,6 +284,7 @@ void OccView::initializeGL()
     m_view->SetWindow(wind);
     m_view->SetBackgroundColor(Quantity_NOC_BLACK);
     m_view->TriedronDisplay(Aspect_TOTP_LEFT_LOWER, Quantity_NOC_GOLD, 0.08, V3d_ZBUFFER);
+    fitAll();
 }
 
 void OccView::paintGL()
