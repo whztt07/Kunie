@@ -11,84 +11,78 @@
 #include <QActionGroup>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QStackedWidget>
 #include <QTabWidget>
 #include <QStandardPaths>
 #include <QSplitter>
-#include <QTreeView>
+#include <QTreeWidget>
+#include <QSettings>
+#include <QStatusBar>
+#include <QStyle>
 
 MainWindow::MainWindow(Application *app):
     m_app(app)
 {
-    setWindowTitle("Kunie");
-    resize(1366, 768);
+    setWindowTitle(qApp->applicationName());
 
     QSplitter* splitter = new QSplitter(this);
 
-    m_pages = new QTabWidget;
+    m_pages = new QTabWidget(splitter);
     m_pages->setDocumentMode(true);
     m_pages->setTabsClosable(true);
     m_pages->setMovable(true);
     m_pages->setTabBarAutoHide(true);
     m_pages->setTabPosition(QTabWidget::South);
     connect(m_pages, &QTabWidget::tabCloseRequested, this, &MainWindow::onCloseRequested);
-    connect(m_pages, &QTabWidget::currentChanged, this, &MainWindow::updateActions);
+    connect(m_pages, &QTabWidget::currentChanged, this, &MainWindow::onCurrentChanged);
 
-    m_treeView = new QTreeView;
-    splitter->addWidget(m_treeView);
+    m_trees = new QStackedWidget(splitter);
+
+    splitter->addWidget(m_trees);
     splitter->addWidget(m_pages);
-
     splitter->setStretchFactor(0, 0);
     splitter->setStretchFactor(1, 1);
+
     setCentralWidget(splitter);
 
-    m_file = menuBar()->addMenu("&File");
+    createActions();
+    createMenus();
+    createToolBars();
+    statusBar()->showMessage("Welcome to Kunié");
+    readSettings();
 
-    QAction* newDoc = m_file->addAction("&New...");
-    newDoc->setShortcuts(QKeySequence::New);
-    connect(newDoc, &QAction::triggered, this, &MainWindow::newDocument);
-
-    QAction* open = m_file->addAction("&Open...");
-    open->setShortcuts(QKeySequence::Open);
-    connect(open, &QAction::triggered, this, &MainWindow::open);
-
-    m_import = m_file->addAction("&Import");
-    connect(m_import, &QAction::triggered, this, &MainWindow::import);
-
-    m_file->addSeparator();
-
-    m_save = m_file->addAction("&Save");
-    m_save->setShortcuts(QKeySequence::Save);
-    connect(m_save, &QAction::triggered, this, &MainWindow::save);
-
-    m_saveAs = m_file->addAction("Save &as...");
-    m_saveAs->setShortcuts(QKeySequence::SaveAs);
-    connect(m_saveAs, &QAction::triggered, this, &MainWindow::saveAs);
-
-    m_file->addSeparator();
-
-    m_close = m_file->addAction("&Close");
-    m_close->setShortcuts(QKeySequence::Close);
-    connect(m_close, &QAction::triggered, this, &MainWindow::close);
-
-    QAction* exitAct = m_file->addAction(tr("&Quit"));
-    exitAct->setShortcuts(QKeySequence::Quit);
-    connect(exitAct, &QAction::triggered, this, &MainWindow::close);
-
-    m_view = menuBar()->addMenu("&View");
-    m_modeling = addToolBar("Modeling");
-    m_visualization = addToolBar("Visualization");
-
-    updateActions();
+    newDocument();
 }
 
 MainWindow::~MainWindow()
 {
-
 }
 
 Document *MainWindow::currentDocument()
 {
     return OccView::document(m_pages->currentWidget());
+}
+
+void MainWindow::newDocument()
+{
+    Document* doc = m_app->newDocument();
+    addDocument(doc);
+}
+
+void MainWindow::open()
+{
+    QString file =
+            QFileDialog::getOpenFileName(this, "Open", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+                                         "All (*);;MDTV-XCAF (*.dxc);;XmlXCAF (*.xml);;BinXCAF (*.xbf);;"
+                                         "MDTV-Standard (*.std);;BinOcaf (*.cbf);;IGES (*.igs *.iges);;STEP (*.stp *.step)");
+
+    if(!file.isEmpty()) {
+        Document* doc = m_app->open(file);
+        if(doc) {
+            addDocument(doc);
+            doc->view()->fitAll();
+        }
+    }
 }
 
 void MainWindow::import()
@@ -116,32 +110,9 @@ void MainWindow::saveAs()
     if(!file.isEmpty()) currentDocument()->saveAs(file);
 }
 
-void MainWindow::newDocument()
+void MainWindow::closeEvent(QCloseEvent*)
 {
-    Document* doc = m_app->newDocument();
-    addDocument(doc);
-}
-
-void MainWindow::open()
-{
-    QString file =
-            QFileDialog::getOpenFileName(this, "Open", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
-                                         "All (*);;MDTV-XCAF (*.dxc);;XmlXCAF (*.xml);;BinXCAF (*.xbf);;"
-                                         "MDTV-Standard (*.std);;BinOcaf (*.cbf);;IGES (*.igs *.iges);;STEP (*.stp *.step)");
-
-    if(!file.isEmpty()) {
-        Document* doc = m_app->open(file);
-        if(doc) {
-            addDocument(doc);
-            m_treeView->setModel(new OcafModel(doc));
-            doc->view()->fitAll();
-        }
-    }
-}
-
-void MainWindow::close()
-{
-    onCloseRequested(m_pages->currentIndex());
+    writeSettings();
 }
 
 void MainWindow::onCloseRequested(int index)
@@ -150,8 +121,13 @@ void MainWindow::onCloseRequested(int index)
     Document* document = OccView::document(widget);
     m_pages->removeTab(index);
     delete widget;
+
+    QTreeWidget* tree = document->tree();
+    m_trees->removeWidget(tree);
+    delete tree;
+
     m_app->closeDocument(document);
-    updateActions();
+    onCurrentChanged();
 }
 
 void MainWindow::onError(const QString &msg)
@@ -161,7 +137,80 @@ void MainWindow::onError(const QString &msg)
     QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::updateActions()
+void MainWindow::onMessage(const QString& msg)
+{
+    statusBar()->showMessage(msg);
+}
+
+void MainWindow::createActions()
+{
+    m_newDoc = new QAction(QPixmap(":/icons/New.png"), "&New", this);
+    m_newDoc->setShortcuts(QKeySequence::New);
+    connect(m_newDoc, &QAction::triggered, this, &MainWindow::newDocument);
+
+    m_open = new QAction(QPixmap(":/icons/Open.png"), "&Open...", this);
+    m_open->setShortcuts(QKeySequence::Open);
+    connect(m_open, &QAction::triggered, this, &MainWindow::open);
+
+    m_import = new QAction("&Import", this);
+    connect(m_import, &QAction::triggered, this, &MainWindow::import);
+
+    m_save = new QAction(QPixmap(":/icons/Save.png"), "&Save", this);
+    m_save->setShortcuts(QKeySequence::Save);
+    connect(m_save, &QAction::triggered, this, &MainWindow::save);
+
+    m_saveAs = new QAction("Save &as...", this);
+    m_saveAs->setShortcuts(QKeySequence::SaveAs);
+    connect(m_saveAs, &QAction::triggered, this, &MainWindow::saveAs);
+
+    m_close = new QAction("&Close", this);
+    m_close->setShortcuts(QKeySequence::Close);
+    connect(m_close, &QAction::triggered, this, &MainWindow::close);
+
+    m_exit = new QAction("&Quit", this);
+    m_exit->setShortcuts(QKeySequence::Quit);
+    connect(m_exit, &QAction::triggered, this, &MainWindow::close);
+}
+
+void MainWindow::createMenus()
+{
+    m_file = menuBar()->addMenu("&File");
+    m_file->addAction(m_newDoc);
+    m_file->addAction(m_open);
+    m_file->addAction(m_import);
+    m_file->addSeparator();
+    m_file->addAction(m_save);
+    m_file->addAction(m_saveAs);
+    m_file->addSeparator();
+    m_file->addAction(m_close);
+    m_file->addAction(m_exit);
+
+    m_view = menuBar()->addMenu("&View");
+}
+
+void MainWindow::createToolBars()
+{
+    m_modeling = addToolBar("Modeling");
+    m_visualization = addToolBar("Visualization");
+}
+
+void MainWindow::readSettings()
+{
+    QSettings settings;
+    settings.beginGroup("MainWindow");
+    resize(settings.value("size", QSize(1366,768)).toSize());
+    settings.endGroup();
+}
+
+void MainWindow::writeSettings()
+{
+    QSettings settings;
+    settings.beginGroup("MainWindow");
+    settings.setValue("size", size());
+    settings.endGroup();
+}
+
+void MainWindow::onCurrentChanged()
 {
     bool enabled = currentDocument() != NULL;
     m_close->setEnabled(enabled);
@@ -189,8 +238,11 @@ void MainWindow::updateActions()
 void MainWindow::addDocument(Document* doc)
 {
     connect(doc, &Document::error, this, &MainWindow::onError);
+
     int index = m_pages->addTab(doc->view()->widget(), doc->title());
     m_pages->setTabToolTip(index, doc->title());
     m_pages->setCurrentWidget(doc->view()->widget());
-    updateActions();
+
+    m_trees->addWidget(doc->tree());
+    m_trees->setCurrentWidget(doc->tree());
 }

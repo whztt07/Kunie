@@ -23,8 +23,6 @@ SOURCES += \
     SphereCommand.cpp \
     CutDriver.cpp \
     CutCommand.cpp \
-    OcafModel.cpp \
-    OcafItem.cpp \
     LabelItem.cpp \
     AttributeItem.cpp
 
@@ -40,8 +38,6 @@ HEADERS += \
     SphereCommand.h \
     CutDriver.h \
     CutCommand.h \
-    OcafModel.h \
-    OcafItem.h \
     LabelItem.h \
     AttributeItem.h
 

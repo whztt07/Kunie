@@ -14,6 +14,9 @@
 Application::Application(int &argc, char **argv):
     QApplication(argc, argv)
 {
+    QCoreApplication::setOrganizationName("pguerville");
+    QCoreApplication::setApplicationName("Kunie");
+
     setAttribute(Qt::AA_NativeWindows);
 
     initEnv();
@@ -25,7 +28,11 @@ Application::Application(int &argc, char **argv):
 
     m_window = new MainWindow(this);
     m_window->show();
-    m_window->newDocument();
+}
+
+Application::~Application()
+{
+    delete m_window;
 }
 
 MainWindow *Application::window()

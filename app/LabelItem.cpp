@@ -7,44 +7,23 @@
 #include <QStyle>
 
 LabelItem::LabelItem(TDF_Label label, LabelItem *parent):
-    OcafItem(parent),
-    m_label(label)
+    QTreeWidgetItem(parent)
 {
-    for (TDF_AttributeIterator it(m_label); it.More(); it.Next()) {
-        m_children.append(new AttributeItem(it.Value(), this));
+    TCollection_AsciiString entry;
+    TDF_Tool::Entry(label, entry);
+    setData(0, Qt::DisplayRole, entry.ToCString());
+    setIcon(0, qApp->style()->standardIcon(QStyle::SP_DirIcon));
+
+    for (TDF_AttributeIterator it(label); it.More(); it.Next()) {
+        addChild(new AttributeItem(it.Value(), this));
     }
 
-    for (TDF_ChildIterator it(m_label); it.More(); it.Next()) {
-        m_children.append(new LabelItem(it.Value(), this));
+    for (TDF_ChildIterator it(label); it.More(); it.Next()) {
+        addChild(new LabelItem(it.Value(), this));
     }
 }
 
 LabelItem::~LabelItem()
 {
-    qDeleteAll(m_children);
-}
-
-OcafItem* LabelItem::child(int row)
-{
-    return m_children.value(row);
-}
-
-int LabelItem::childCount() const
-{
-    return m_children.count();
-}
-
-QVariant LabelItem::data(int column, int role) const
-{
-    if (column == 0) {
-        if (role == Qt::DisplayRole) {
-            TCollection_AsciiString entry;
-            TDF_Tool::Entry(m_label, entry);
-            return entry.ToCString();
-        } else if (role == Qt::DecorationRole) {
-            return qApp->style()->standardIcon(QStyle::SP_DirIcon);
-        }
-    }
-
-    return QVariant();
+    qDeleteAll(takeChildren());
 }

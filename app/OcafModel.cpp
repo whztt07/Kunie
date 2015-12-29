@@ -89,3 +89,12 @@ QVariant OcafModel::headerData(int section, Qt::Orientation orientation, int rol
 
     return QVariant();
 }
+
+Qt::ItemFlags OcafModel::flags(const QModelIndex& index) const
+{
+    if (!index.isValid())
+        return Qt::NoItemFlags;
+
+    OcafItem *item = static_cast<OcafItem*>(index.internalPointer());
+    return item->flags();
+}

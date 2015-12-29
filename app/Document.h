@@ -12,6 +12,7 @@
 
 class Application;
 class OccView;
+class QTreeWidget;
 class QActionGroup;
 
 class Document : public QObject
@@ -21,6 +22,7 @@ class Document : public QObject
 public:
     QString title();
     OccView* view();
+    QTreeWidget* tree();
 
     Handle(TDocStd_Document) ocafDoc();
     Handle(TDocStd_Application) ocafApp();
@@ -60,6 +62,7 @@ private:
     Handle(XCAFDoc_ShapeTool) m_shapeTool;
     Handle(V3d_Viewer) m_viewer;
     OccView* m_view;
+    QTreeWidget* m_tree;
     int m_colorNum;
 
     QActionGroup* m_actions;

@@ -17,6 +17,11 @@ int OcafItem::columnCount() const
     return 2;
 }
 
+Qt::ItemFlags OcafItem::flags() const
+{
+    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+}
+
 int OcafItem::row() const
 {
     if (m_parent)

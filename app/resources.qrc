@@ -18,5 +18,8 @@
         <file>icons/Sphere.png</file>
         <file>icons/Torus.png</file>
         <file>icons/Cut.png</file>
+        <file>icons/New.png</file>
+        <file>icons/Open.png</file>
+        <file>icons/Save.png</file>
     </qresource>
 </RCC>

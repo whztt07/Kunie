@@ -12,6 +12,8 @@ class Application : public QApplication
 {
 public:
     Application(int& argc, char** argv);
+    ~Application();
+
     Handle(XCAFApp_Application) ocafApp();
     MainWindow* window();
     Document* newDocument(const QString& title = "Untitle");

@@ -21,7 +21,9 @@
 #include "CylinderCommand.h"
 #include "SphereCommand.h"
 #include "CutCommand.h"
+#include "LabelItem.h"
 
+#include <QTreeWidget>
 #include <QActionGroup>
 #include <TopoDS_Shape.hxx>
 #include <AIS_Shape.hxx>
@@ -244,8 +246,10 @@ Document::Document(const QString& title, Application* app):
     context()->SetDisplayMode(AIS_Shaded);
 
     m_shapeTool = XCAFDoc_DocumentTool::ShapeTool(m_ocafDoc->Main());
-
     m_view = new OccView(this);
+
+    m_tree = new QTreeWidget;
+    m_tree->setHeaderLabels(QStringList() << "Label" << "Value");
 
     initActions();
 }
@@ -262,6 +266,11 @@ QString Document::title()
 OccView* Document::view()
 {
     return m_view;
+}
+
+QTreeWidget *Document::tree()
+{
+    return m_tree;
 }
 
 QActionGroup *Document::modelingActions()
@@ -427,6 +436,9 @@ bool Document::open(const QString& file)
     }
 
     QApplication::restoreOverrideCursor();
+
+    m_tree->addTopLevelItem(new LabelItem(m_ocafDoc->Main().Root()));
+
     return success;
 }
 
