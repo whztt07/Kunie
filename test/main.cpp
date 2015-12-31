@@ -1,10 +1,10 @@
 #include <QTest>
 #include "Application.h"
-#include "KunieTest.h"
+#include "Test.h"
 
 int main(int argc, char *argv[])
 {
     Application app(argc, argv);
-    KunieTest test(&app);
+    Test test(&app);
     return QTest::qExec(&test, argc, argv);
 }

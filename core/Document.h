@@ -20,7 +20,8 @@ class Document : public QObject
     Q_OBJECT
 
 public:
-    QString title();
+    QString name();
+    QString path();
     OccView* view();
     QTreeWidget* tree();
 
@@ -47,7 +48,7 @@ signals:
     void error(const QString& msg);
 
 private:
-    Document(const QString& title, Application* app);
+    Document(Handle(TDocStd_Document) doc);
     ~Document();
 
     void insert(const TopoDS_Shape& shape);
@@ -57,7 +58,6 @@ private:
     void loadShapes();
     void loadShapes(const TDF_Label& label);
 
-    QString m_title;
     Handle(TDocStd_Document) m_ocafDoc;
     Handle(XCAFDoc_ShapeTool) m_shapeTool;
     Handle(V3d_Viewer) m_viewer;

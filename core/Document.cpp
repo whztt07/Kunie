@@ -227,11 +227,12 @@ Graphic3d_NameOfMaterial Document::s_material = Graphic3d_NOM_ALUMINIUM;
 
 static Handle(Graphic3d_GraphicDriver) graphicDriver;
 
-Document::Document(const QString& title, Application* app):
-    QObject(app),
-    m_title(title),
+Document::Document(Handle(TDocStd_Document) doc):
+    m_ocafDoc(doc),
     m_colorNum(0)
 {
+    m_ocafDoc->UnModify();
+
     if (graphicDriver.IsNull()) {
         Handle(Aspect_DisplayConnection) display = new Aspect_DisplayConnection;
         graphicDriver = new OpenGl_GraphicDriver(display);
@@ -241,9 +242,9 @@ Document::Document(const QString& title, Application* app):
     m_viewer->SetDefaultLights();
     m_viewer->SetLightOn();
 
-    app->ocafApp()->NewDocument("MDTV-XCAF", m_ocafDoc);
     TPrsStd_AISViewer::New(m_ocafDoc->Main(), m_viewer);
     context()->SetDisplayMode(AIS_Shaded);
+    displayPrs();
 
     m_shapeTool = XCAFDoc_DocumentTool::ShapeTool(m_ocafDoc->Main());
     m_view = new OccView(this);
@@ -258,9 +259,20 @@ Document::~Document()
 {
 }
 
-QString Document::title()
+QString Document::name()
 {
-    return m_title;
+    if(m_ocafDoc->IsSaved())
+        return QString::fromUtf16((const ushort*)m_ocafDoc->GetName().ToExtString());
+
+    return "Untitled";
+}
+
+QString Document::path()
+{
+    if(m_ocafDoc->IsSaved())
+        return QString::fromUtf16((const ushort*)m_ocafDoc->GetPath().ToExtString());
+
+    return name();
 }
 
 OccView* Document::view()
@@ -336,6 +348,7 @@ void Document::createCylinder()
     prs->Display(1);
     context()->UpdateCurrentViewer();
     m_ocafDoc->CommitCommand();
+    m_ocafDoc->Modify();
     QApplication::restoreOverrideCursor();
 }
 
@@ -351,6 +364,7 @@ void Document::createSphere()
     prs->Display(1);
     context()->UpdateCurrentViewer();
     m_ocafDoc->CommitCommand();
+    m_ocafDoc->Modify();
     QApplication::restoreOverrideCursor();
 }
 
@@ -391,6 +405,7 @@ void Document::createCut()
     context()->UpdateCurrentViewer();
 
     m_ocafDoc->CommitCommand();
+    m_ocafDoc->Modify();
     QApplication::restoreOverrideCursor();
 }
 
@@ -474,6 +489,21 @@ bool Document::import(const QString& file)
     QApplication::restoreOverrideCursor();
 
     return (!shapes.IsNull() && shapes->Length());
+}
+
+bool Document::save()
+{
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+
+    TCollection_ExtendedString statusMsg;
+    PCDM_StoreStatus status = ocafApp()->Save(m_ocafDoc, statusMsg);
+
+    if(status != PCDM_SS_OK)
+        emit error(QFileInfo(path()).fileName() + " not saved.\n" + QString::fromUtf16((const ushort*)statusMsg.ToExtString()));
+
+    QApplication::restoreOverrideCursor();
+
+    return (status == PCDM_SS_OK);
 }
 
 bool Document::saveAs(const QString &file)

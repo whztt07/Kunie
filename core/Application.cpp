@@ -4,12 +4,13 @@
 #include "CylinderDriver.h"
 #include "SphereDriver.h"
 #include "CutDriver.h"
-#include <AppStd_Application.hxx>
+#include <XCAFApp_Application.hxx>
 #include <TFunction_DriverTable.hxx>
 #include <QMessageBox>
 #include <QElapsedTimer>
 #include <QDir>
 #include <QFileInfo>
+
 
 Application::Application(int &argc, char **argv):
     QApplication(argc, argv)
@@ -17,7 +18,7 @@ Application::Application(int &argc, char **argv):
     QCoreApplication::setOrganizationName("pguerville");
     QCoreApplication::setApplicationName("Kunie");
 
-    setAttribute(Qt::AA_NativeWindows);
+    Q_INIT_RESOURCE(resources);
 
     initEnv();
 
@@ -32,6 +33,10 @@ Application::Application(int &argc, char **argv):
 
 Application::~Application()
 {
+    foreach (Document* doc, m_documents) {
+        m_ocafApp->Close(doc->ocafDoc());
+        delete doc;
+    }
     delete m_window;
 }
 
@@ -40,46 +45,46 @@ MainWindow *Application::window()
     return m_window;
 }
 
-Document* Application::newDocument(const QString& title)
+Document* Application::newDoc()
 {
-    char name[64];
-    int i, j = 1;
-
-    // look for a unique new document title
-    foreach(Document* doc, m_documents) {
-        if (sscanf(doc->title().toUtf8().constData(), "%64s <%d>", name, &i) == 2) {
-            if (i >= j)
-                j = i + 1;
-        }
-    }
-
-    m_documents.append(new Document(QString("%1 <%2>").arg(title).arg(j), this));
-
+    Handle(TDocStd_Document) ocafDoc;
+    m_ocafApp->NewDocument("MDTV-XCAF", ocafDoc);
+    m_documents.append(new Document(ocafDoc));
     return m_documents.last();
 }
 
-Document *Application::open(const QString file)
+Document* Application::openDoc(const QString& file)
 {
-    Document* doc = newDocument(QFileInfo(file).fileName());
-    if(doc->open(file))
-        return doc;
-    else {
-        closeDocument(doc);
+    Handle(TDocStd_Document) ocafDoc;
+
+    int index = m_ocafApp->IsInSession(file.toUtf8().data());
+
+    if (index) {
+        m_ocafApp->GetDocument(index, ocafDoc);
+        foreach (Document* doc, m_documents) {
+            if (doc->ocafDoc() == ocafDoc) {
+                return doc;
+            }
+        }
+    }
+
+    PCDM_ReaderStatus status = m_ocafApp->Open(file.toUtf8().data(), ocafDoc);
+
+    if (status != PCDM_RS_OK) {
+        emit error(QFileInfo(file).fileName() + " not open");
         return NULL;
     }
+
+    m_documents.append(new Document(ocafDoc));
+    return m_documents.last();
 }
 
-void Application::closeDocument(Document *doc)
+void Application::closeDoc(Document *doc)
 {
     if(m_documents.removeOne(doc)) {
         m_ocafApp->Close(doc->ocafDoc());
         delete doc;
     }
-}
-
-Handle(XCAFApp_Application) Application::ocafApp()
-{
-    return m_ocafApp;
 }
 
 void Application::wait(int ms)

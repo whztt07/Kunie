@@ -3,29 +3,33 @@
 
 #include <QApplication>
 #include <QList>
-#include <XCAFApp_Application.hxx>
+#include <TDocStd_Application.hxx>
 
 class Document;
 class MainWindow;
 
 class Application : public QApplication
 {
+    Q_OBJECT
+
 public:
     Application(int& argc, char** argv);
     ~Application();
 
-    Handle(XCAFApp_Application) ocafApp();
     MainWindow* window();
-    Document* newDocument(const QString& title = "Untitle");
-    Document* open(const QString file);
-    void closeDocument(Document* doc);
+    Document* newDoc();
+    Document* openDoc(const QString& file);
+    void closeDoc(Document* doc);
 
     void static wait(int ms);
+
+signals:
+    void error(const QString& msg);
 
 private:
     void initEnv();
 
-    Handle(XCAFApp_Application) m_ocafApp;
+    Handle(TDocStd_Application) m_ocafApp;
     QList<Document*> m_documents;
     MainWindow* m_window;
 };

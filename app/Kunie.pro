@@ -1,62 +1,22 @@
+include(../opencascade.pri)
+include(../core/core.pri)
+
 QT += core gui widgets
 
 TARGET = Kunie
 TEMPLATE = app
 
-CASROOT = $$(CASROOT)
+SOURCES += main.cpp
 
-isEmpty(CASROOT) {
-    error("CASROOT environment variable is not set")
-}
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../core/release/ -lcore
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../core/debug/ -lcore
+else:unix: LIBS += -L$$OUT_PWD/../core/ -lcore
 
-SOURCES += \
-    main.cpp \
-    MainWindow.cpp \
-    OccView.cpp \
-    MakeBottle.cpp \
-    Document.cpp \
-    Translator.cpp \
-    CylinderDriver.cpp \
-    Application.cpp \
-    CylinderCommand.cpp \
-    SphereDriver.cpp \
-    SphereCommand.cpp \
-    CutDriver.cpp \
-    CutCommand.cpp \
-    LabelItem.cpp \
-    AttributeItem.cpp
+INCLUDEPATH += $$PWD/../core
+DEPENDPATH += $$PWD/../core
 
-HEADERS += \
-    MainWindow.h \
-    OccView.h \
-    Document.h \
-    Translator.h \
-    CylinderDriver.h \
-    Application.h \
-    CylinderCommand.h \
-    SphereDriver.h \
-    SphereCommand.h \
-    CutDriver.h \
-    CutCommand.h \
-    LabelItem.h \
-    AttributeItem.h
-
-linux:QMAKE_CXXFLAGS += -isystem $$CASROOT/inc
-win32:QMAKE_CXXFLAGS += -isystem C:\\OCE\\OCE-0.17\\include\\oce
-
-linux:INCLUDEPATH += $$CASROOT/inc
-win32:INCLUDEPATH += C:\\OCE\\OCE-0.17\\include\\oce
-DEPENDPATH = $$INCLUDEPATH
-
-linux:LIBS += -L$$CASROOT/lin64/gcc/libd
-win32:LIBS += -LC:\\OCE\\OCE-0.17\\Win32\\bin
-
-LIBS += -lTKernel -lPTKernel -lTKMath -lTKService -lTKV3d -lTKOpenGl \
-        -lTKBRep -lTKIGES -lTKSTL -lTKVRML -lTKSTEP -lTKSTEPAttr -lTKSTEP209 \
-        -lTKSTEPBase -lTKShapeSchema -lTKGeomBase -lTKGeomAlgo -lTKG3d -lTKG2d \
-        -lTKXSBase -lTKPShape -lTKShHealing -lTKHLR -lTKTopAlgo -lTKMesh -lTKPrim \
-        -lTKCDF -lTKBool -lTKBO -lTKFillet -lTKOffset -lTKCAF -lTKLCAF \
-        -lTKXCAF -lTKXDESTEP -lTKXDEIGES
-
-RESOURCES += \
-    resources.qrc
+win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../core/release/libcore.a
+else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../core/debug/libcore.a
+else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../core/release/core.lib
+else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../core/debug/core.lib
+else:unix: PRE_TARGETDEPS += $$OUT_PWD/../core/libcore.a
