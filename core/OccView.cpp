@@ -1,7 +1,6 @@
 #include "OccView.h"
 #include "Document.h"
 #include <QWheelEvent>
-#include <QDebug>
 #include <QCursor>
 #include <QApplication>
 #include <QMouseEvent>

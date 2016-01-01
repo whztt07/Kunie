@@ -1,4 +1,5 @@
 #include <QTest>
+#include <QStandardPaths>
 #include "Test.h"
 #include "Application.h"
 #include "MainWindow.h"
@@ -119,41 +120,41 @@ void Test::saveDocument()
     Document* doc = m_app->window()->currentDoc();
     doc->createCut();
 
-    QString file = QString(DATA) + QDir::separator() + "saved" + QDir::separator() + "cut.xml";
+    QString file = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + QDir::separator() + "cut.xml";
     QVERIFY(doc->saveAs(file));
 
-    file = QString(DATA) + QDir::separator() + "saved" + QDir::separator() + "cut.dxc";
+    file = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + QDir::separator() + "cut.dxc";
     QVERIFY(doc->saveAs(file));
 
-    file = QString(DATA) + QDir::separator() + "saved" + QDir::separator() + "cut.std";
+    file = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + QDir::separator() + "cut.std";
     QVERIFY(doc->saveAs(file));
 
-    file = QString(DATA) + QDir::separator() + "saved" + QDir::separator() + "cut.xbf";
+    file = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + QDir::separator() + "cut.xbf";
     QVERIFY(doc->saveAs(file));
 
-    file = QString(DATA) + QDir::separator() + "saved" + QDir::separator() + "cut.cbf";
+    file = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + QDir::separator() + "cut.cbf";
     QVERIFY(doc->saveAs(file));
 }
 
 void Test::checkSavedDocument()
 {
-    QString file = QString(DATA) + QDir::separator() + "saved" + QDir::separator() + "cut.xml";
+    QString file = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + QDir::separator() + "cut.xml";
     Document* doc = m_app->window()->openDoc(file);
     QVERIFY(doc);
 
-    file = QString(DATA) + QDir::separator() + "saved" + QDir::separator() + "cut.dxc";
+    file = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + QDir::separator() + "cut.dxc";
     doc = m_app->window()->openDoc(file);
     QVERIFY(doc);
 
-    file = QString(DATA) + QDir::separator() + "saved" + QDir::separator() + "cut.std";
+    file = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + QDir::separator() + "cut.std";
     doc = m_app->window()->openDoc(file);
     QVERIFY(doc);
 
-    file = QString(DATA) + QDir::separator() + "saved" + QDir::separator() + "cut.xbf";
+    file = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + QDir::separator() + "cut.xbf";
     doc = m_app->window()->openDoc(file);
     QVERIFY(doc);
 
-    file = QString(DATA) + QDir::separator() + "saved" + QDir::separator() + "cut.cbf";
+    file = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + QDir::separator() + "cut.cbf";
     doc = m_app->window()->openDoc(file);
     QVERIFY(doc);
 }
