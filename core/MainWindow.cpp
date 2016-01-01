@@ -209,7 +209,7 @@ void MainWindow::open()
     QString file =
             QFileDialog::getOpenFileName(this, "Open", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
                                          "All (*);;MDTV-XCAF (*.dxc);;XmlXCAF (*.xml);;BinXCAF (*.xbf);;"
-                                         "MDTV-Standard (*.std);;BinOcaf (*.cbf);;IGES (*.igs *.iges);;STEP (*.stp *.step)");
+                                         "MDTV-Standard (*.std);;BinOcaf (*.cbf)");
 
     if(!file.isEmpty()) openDoc(file);
 }

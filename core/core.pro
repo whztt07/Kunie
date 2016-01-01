@@ -20,7 +20,8 @@ SOURCES += \
     CutDriver.cpp \
     CutCommand.cpp \
     LabelItem.cpp \
-    AttributeItem.cpp
+    AttributeItem.cpp \
+    Color.cpp
 
 HEADERS += \
     MainWindow.h \
@@ -35,7 +36,8 @@ HEADERS += \
     CutDriver.h \
     CutCommand.h \
     LabelItem.h \
-    AttributeItem.h
+    AttributeItem.h \
+    Color.h
 
 RESOURCES += \
     resources.qrc

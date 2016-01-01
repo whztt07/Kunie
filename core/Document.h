@@ -32,17 +32,18 @@ public:
 
     QActionGroup* modelingActions();
 
-    void display(const TopoDS_Shape& shape);
-    void display(const Handle(TopTools_HSequenceOfShape)& shapes);
+    bool open(const QString& file);
+    bool import(const QString& file);
+    bool save();
+    bool saveAs(const QString& file);
 
     void createBottle();
     void createCylinder();
     void createSphere();
     void createCut();
-    bool open(const QString& file);
-    bool import(const QString& file);
-    bool save();
-    bool saveAs(const QString& file);
+
+    void display(const TopoDS_Shape& shape);
+    void display(const Handle(TopTools_HSequenceOfShape)& shapes);
 
 signals:
     void error(const QString& msg);
@@ -63,13 +64,11 @@ private:
     Handle(V3d_Viewer) m_viewer;
     OccView* m_view;
     QTreeWidget* m_tree;
-    int m_colorNum;
+    int m_colorIndex;
 
     QActionGroup* m_actions;
 
     static Graphic3d_NameOfMaterial s_material;
-    static Quantity_NameOfColor s_colors[];
-    static int s_maxColor;
 
     friend class Application;
 };
