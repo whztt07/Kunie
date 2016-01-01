@@ -46,10 +46,10 @@ private:
     void onError(const QString& msg);
     void onMessage(const QString& msg);
 
-    bool saveDocumentAs(Document* doc);
     bool saveDocument(Document* doc);
+    bool saveDocumentAs(Document* doc);
     void addDocument(Document* doc);
-    bool removeDocument(Document* doc);
+
     int documentIndex(Document* doc);
     bool maybeSave(Document *doc);
 
@@ -64,15 +64,14 @@ private:
     QAction* m_import;
     QAction* m_save;
     QAction* m_saveAs;
-    QAction* m_close;
     QAction* m_exit;
 
     QMenu* m_fileMenu;
-    QMenu* m_viewMenu;
+    QMenu* m_renderingMenu;
 
     QToolBar* m_fileToolBar;
-    QToolBar* m_modeling;
-    QToolBar* m_visualization;
+    QToolBar* m_modelingToolBar;
+    QToolBar* m_viewToolBar;
 };
 
 #endif // MAINWINDOW_H

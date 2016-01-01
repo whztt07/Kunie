@@ -15,8 +15,7 @@
 #include <QTreeWidget>
 #include <QSettings>
 #include <QStatusBar>
-#include <QDebug>
-
+#include <QCloseEvent>
 
 MainWindow::MainWindow(Application *app):
     m_app(app)
@@ -119,6 +118,92 @@ bool MainWindow::closeAll()
     return true;
 }
 
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    if(!closeAll()) {
+        event->ignore();
+    } else {
+        event->accept();
+        writeSettings();
+    }
+}
+
+void MainWindow::createActions()
+{
+    m_newDoc = new QAction(QPixmap(":/icons/New.png"), "&New", this);
+    m_newDoc->setShortcuts(QKeySequence::New);
+    connect(m_newDoc, &QAction::triggered, this, &MainWindow::newDoc);
+
+    m_open = new QAction(QPixmap(":/icons/Open.png"), "&Open...", this);
+    m_open->setShortcuts(QKeySequence::Open);
+    connect(m_open, &QAction::triggered, this, &MainWindow::open);
+
+    m_import = new QAction("&Import", this);
+    connect(m_import, &QAction::triggered, this, &MainWindow::import);
+
+    m_save = new QAction(QPixmap(":/icons/Save.png"), "&Save", this);
+    m_save->setShortcuts(QKeySequence::Save);
+    connect(m_save, &QAction::triggered, this, &MainWindow::save);
+
+    m_saveAs = new QAction("Save &as...", this);
+    m_saveAs->setShortcuts(QKeySequence::SaveAs);
+    connect(m_saveAs, &QAction::triggered, this, &MainWindow::saveAs);
+
+    m_exit = new QAction("&Quit", this);
+    m_exit->setShortcuts(QKeySequence::Quit);
+    connect(m_exit, &QAction::triggered, this, &MainWindow::close);
+}
+
+void MainWindow::createMenus()
+{
+    m_fileMenu = menuBar()->addMenu("&File");
+    m_fileMenu->addAction(m_newDoc);
+    m_fileMenu->addAction(m_open);
+    m_fileMenu->addAction(m_import);
+    m_fileMenu->addSeparator();
+    m_fileMenu->addAction(m_save);
+    m_fileMenu->addAction(m_saveAs);
+    m_fileMenu->addSeparator();
+    m_fileMenu->addAction(m_exit);
+
+    m_renderingMenu = menuBar()->addMenu("&Rendering");
+}
+
+void MainWindow::createToolBars()
+{
+    m_fileToolBar = addToolBar("File");
+    m_fileToolBar->addAction(m_newDoc);
+    m_fileToolBar->addAction(m_open);
+    m_fileToolBar->addAction(m_save);
+
+    m_modelingToolBar = addToolBar("Modeling");
+    m_viewToolBar = addToolBar("View");
+}
+
+void MainWindow::createStatusBar()
+{
+    statusBar()->showMessage("Welcome to Kunié");
+}
+
+void MainWindow::readSettings()
+{
+    QSettings settings;
+    settings.beginGroup("MainWindow");
+    resize(settings.value("size", QSize(1366,768)).toSize());
+    if(settings.contains("pos"))
+        move(settings.value("pos").toPoint());
+    settings.endGroup();
+}
+
+void MainWindow::writeSettings()
+{
+    QSettings settings;
+    settings.beginGroup("MainWindow");
+    settings.setValue("size", size());
+    settings.setValue("pos", pos());
+    settings.endGroup();
+}
+
 void MainWindow::open()
 {
     QString file =
@@ -149,54 +234,30 @@ void MainWindow::saveAs()
     saveDocumentAs(currentDoc());
 }
 
-bool MainWindow::saveDocument(Document* doc)
+void MainWindow::onCurrentChanged(int index)
 {
-    bool success = false;
+    bool enabled = (index >= 0);
+    m_import->setEnabled(enabled);
+    m_save->setEnabled(enabled);
+    m_saveAs->setEnabled(enabled);
 
-    if (doc->ocafDoc()->IsSaved()) {
-        if(doc->ocafDoc()->IsModified()) {
-            success = doc->save();
-            if (success)
-                statusBar()->showMessage(doc->name() + " saved", 2000);
-        }
-    } else {
-        success = saveDocumentAs(doc);
-    }
+    m_renderingMenu->clear();
+    m_renderingMenu->setEnabled(enabled);
 
-    return success;
-}
+    m_modelingToolBar->clear();
+    m_modelingToolBar->setVisible(enabled);
 
-int MainWindow::documentIndex(Document *doc)
-{
-    int res = -1;
-    for (int i=0; i<m_pages->count(); i++) {
-        if (m_pages->widget(i) == doc->view()->widget())
-            res = i;
-    }
-    return res;
-}
+    m_viewToolBar->clear();
+    m_viewToolBar->setVisible(enabled);
 
-bool MainWindow::saveDocumentAs(Document* doc)
-{
-    QString file =
-            QFileDialog::getSaveFileName(this, "Save As", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
-                                         "All (*);;MDTV-XCAF (*.dxc);;XmlXCAF (*.xml);;BinXCAF (*.xbf);;"
-                                         "MDTV-Standard (*.std);;BinOcaf (*.cbf)");
-
-    if(!file.isEmpty() && doc->saveAs(file)) {
-        int index = documentIndex(doc);
-        m_pages->setTabToolTip(index, doc->path());
-        m_pages->setTabText(index, doc->name());
+    if (m_pages->currentWidget()) {
+        m_renderingMenu->addActions(currentDoc()->view()->renderActions()->actions());
+        m_modelingToolBar->addActions(currentDoc()->modelingActions()->actions());
+        m_viewToolBar->addActions(currentDoc()->view()->viewActions()->actions());
         setWindowTitle(qApp->applicationName() + " - " + currentDoc()->name());
-        return true;
+    } else {
+        setWindowTitle(qApp->applicationName());
     }
-
-    return false;
-}
-
-void MainWindow::closeEvent(QCloseEvent*)
-{
-    writeSettings();
 }
 
 void MainWindow::onCloseRequested(int index)
@@ -228,130 +289,39 @@ void MainWindow::onMessage(const QString& msg)
     statusBar()->showMessage(msg);
 }
 
-void MainWindow::createActions()
+bool MainWindow::saveDocument(Document* doc)
 {
-    m_newDoc = new QAction(QPixmap(":/icons/New.png"), "&New", this);
-    m_newDoc->setShortcuts(QKeySequence::New);
-    connect(m_newDoc, &QAction::triggered, this, &MainWindow::newDoc);
+    bool success = false;
 
-    m_open = new QAction(QPixmap(":/icons/Open.png"), "&Open...", this);
-    m_open->setShortcuts(QKeySequence::Open);
-    connect(m_open, &QAction::triggered, this, &MainWindow::open);
-
-    m_import = new QAction("&Import", this);
-    connect(m_import, &QAction::triggered, this, &MainWindow::import);
-
-    m_save = new QAction(QPixmap(":/icons/Save.png"), "&Save", this);
-    m_save->setShortcuts(QKeySequence::Save);
-    connect(m_save, &QAction::triggered, this, &MainWindow::save);
-
-    m_saveAs = new QAction("Save &as...", this);
-    m_saveAs->setShortcuts(QKeySequence::SaveAs);
-    connect(m_saveAs, &QAction::triggered, this, &MainWindow::saveAs);
-
-    m_close = new QAction("&Close", this);
-    m_close->setShortcuts(QKeySequence::Close);
-    connect(m_close, &QAction::triggered, this, &MainWindow::close);
-
-    m_exit = new QAction("&Quit", this);
-    m_exit->setShortcuts(QKeySequence::Quit);
-    connect(m_exit, &QAction::triggered, this, &MainWindow::close);
-}
-
-void MainWindow::createMenus()
-{
-    m_fileMenu = menuBar()->addMenu("&File");
-    m_fileMenu->addAction(m_newDoc);
-    m_fileMenu->addAction(m_open);
-    m_fileMenu->addAction(m_import);
-    m_fileMenu->addSeparator();
-    m_fileMenu->addAction(m_save);
-    m_fileMenu->addAction(m_saveAs);
-    m_fileMenu->addSeparator();
-    m_fileMenu->addAction(m_close);
-    m_fileMenu->addAction(m_exit);
-
-    m_viewMenu = menuBar()->addMenu("&View");
-}
-
-void MainWindow::createToolBars()
-{
-    m_fileToolBar = addToolBar("File");
-    m_fileToolBar->addAction(m_newDoc);
-    m_fileToolBar->addAction(m_open);
-    m_fileToolBar->addAction(m_save);
-
-    m_modeling = addToolBar("Modeling");
-    m_visualization = addToolBar("Visualization");
-}
-
-void MainWindow::createStatusBar()
-{
-    statusBar()->showMessage("Welcome to Kunié");
-}
-
-void MainWindow::readSettings()
-{
-    QSettings settings;
-    settings.beginGroup("MainWindow");
-    resize(settings.value("size", QSize(1366,768)).toSize());
-    if(settings.contains("pos"))
-        move(settings.value("pos").toPoint());
-    settings.endGroup();
-}
-
-void MainWindow::writeSettings()
-{
-    QSettings settings;
-    settings.beginGroup("MainWindow");
-    settings.setValue("size", size());
-    settings.setValue("pos", pos());
-    settings.endGroup();
-}
-
-bool MainWindow::maybeSave(Document* doc)
-{
-    qInfo() << doc->name() << doc->ocafDoc()->IsModified() << doc->ocafDoc()->IsSaved();
-    if (doc->ocafDoc()->IsModified()) {
-        QMessageBox::StandardButton ret;
-        ret = QMessageBox::warning(this, qApp->applicationName(),
-                                   "The document has been modified.\n"
-                                   "Do you want to save your changes ?",
-                                   QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        if (ret == QMessageBox::Save)
-            return saveDocument(doc);
-        else if (ret == QMessageBox::Cancel)
-            return false;
-    }
-    return true;
-}
-
-void MainWindow::onCurrentChanged(int index)
-{
-    bool enabled = currentDoc() != NULL;
-    m_close->setEnabled(enabled);
-    m_import->setEnabled(enabled);
-
-    m_save->setEnabled(enabled && currentDoc()->ocafDoc()->IsSaved());
-    m_saveAs->setEnabled(enabled);
-
-    m_viewMenu->clear();
-    m_viewMenu->setEnabled(enabled);
-
-    m_modeling->clear();
-    m_modeling->setVisible(enabled);
-
-    m_visualization->clear();
-    m_visualization->setVisible(enabled);
-
-    if(m_pages->currentWidget()) {
-        m_viewMenu->addActions(currentDoc()->view()->renderActions()->actions());
-        m_modeling->addActions(currentDoc()->modelingActions()->actions());
-        m_visualization->addActions(currentDoc()->view()->viewActions()->actions());
-        setWindowTitle(qApp->applicationName() + " - " + currentDoc()->name());
+    if (doc->ocafDoc()->IsSaved()) {
+        if(doc->ocafDoc()->IsModified()) {
+            success = doc->save();
+            if (success)
+                statusBar()->showMessage(doc->name() + " saved", 2000);
+        }
     } else {
-        setWindowTitle(qApp->applicationName());
+        success = saveDocumentAs(doc);
     }
+
+    return success;
+}
+
+bool MainWindow::saveDocumentAs(Document* doc)
+{
+    QString file =
+            QFileDialog::getSaveFileName(this, "Save As", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+                                         "All (*);;MDTV-XCAF (*.dxc);;XmlXCAF (*.xml);;BinXCAF (*.xbf);;"
+                                         "MDTV-Standard (*.std);;BinOcaf (*.cbf)");
+
+    if(!file.isEmpty() && doc->saveAs(file)) {
+        int index = documentIndex(doc);
+        m_pages->setTabToolTip(index, doc->path());
+        m_pages->setTabText(index, uniqueTitle(doc->name()));
+        setWindowTitle(qApp->applicationName() + " - " + currentDoc()->name());
+        return true;
+    }
+
+    return false;
 }
 
 void MainWindow::addDocument(Document* doc)
@@ -364,6 +334,32 @@ void MainWindow::addDocument(Document* doc)
 
     m_trees->addWidget(doc->tree());
     m_trees->setCurrentWidget(doc->tree());
+}
+
+int MainWindow::documentIndex(Document *doc)
+{
+    int res = -1;
+    for (int i=0; i<m_pages->count(); i++) {
+        if (m_pages->widget(i) == doc->view()->widget())
+            res = i;
+    }
+    return res;
+}
+
+bool MainWindow::maybeSave(Document* doc)
+{
+    if (doc->ocafDoc()->IsModified()) {
+        QMessageBox::StandardButton ret;
+        ret = QMessageBox::warning(this, qApp->applicationName(),
+                                   "The document " + doc->name() + " has been modified.\n"
+                                   "Do you want to save your changes ?",
+                                   QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        if (ret == QMessageBox::Save)
+            return saveDocument(doc);
+        else if (ret == QMessageBox::Cancel)
+            return false;
+    }
+    return true;
 }
 
 QString MainWindow::uniqueTitle(const QString& title)
